@@ -142,9 +142,9 @@ export default function GroupPanel({ draft, onPick, expanded, onToggleExpand }: 
                     selectPlayer(sel ? null : p.id); if (!sel) onPick?.()
                   }
                 }}
-                className={`flex w-full items-center gap-2.5 border-b border-white/5 px-3 py-2.5 text-left transition
+                className={`flex w-full items-center gap-2.5 border-b border-white/5 px-3 py-2 text-left transition
                   ${sel ? 'bg-blue-500/20' : canClick ? 'hover:bg-white/5' : 'opacity-40'}`}>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[12px] font-black shadow" style={tierBadge(p.rating)}>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[11px] font-black shadow" style={tierBadge(p.rating)}>
                   {p.primaryPos}
                 </span>
                 <span className="min-w-0 flex-1">

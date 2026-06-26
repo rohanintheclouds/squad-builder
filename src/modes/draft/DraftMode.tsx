@@ -20,7 +20,7 @@ export default function DraftMode({ draft, onExit }: { draft: Draft; onExit: () 
   if (phase === 'result') return <ResultView draft={draft} onExit={onExit} />
 
   if (isMobile) {
-    const panelH = panelMode === 'list' ? '76vh' : panelMode === 'pitch' ? '15vh' : '40vh'
+    const panelH = panelMode === 'list' ? '76vh' : panelMode === 'pitch' ? '15vh' : '36vh'
     return (
       <div className="flex h-full flex-col">
         <div className="relative flex min-h-0 flex-1 items-center justify-center p-1.5 transition-all duration-300">
