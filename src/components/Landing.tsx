@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { MODES } from '../modes'
 
 export default function Landing({ onEnter }: { onEnter: () => void }) {
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
           Squad Lab
         </h1>
         <p className="mx-auto mt-3 max-w-md text-sm text-blue-100/60 sm:text-base">
-          Real players. Real transfer values. Build, draft, and dominate across three game modes.
+          Real players. Real transfer values. Build, draft, and dominate across {MODES.length} game modes.
         </p>
         <span className="mt-10 inline-block rounded-full border border-blue-400/50 bg-blue-500/10 px-8 py-3 text-sm font-bold uppercase tracking-wide text-blue-200 shadow-[0_0_30px_rgba(59,130,246,0.35)] transition group-hover:bg-blue-500/25 group-hover:shadow-[0_0_45px_rgba(59,130,246,0.6)]">
           Enter Blue Lock
