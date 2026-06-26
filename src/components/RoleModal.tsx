@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../store'
 import { rolesFor } from '../data/roles'
-import { PLAYERS } from '../data/players'
+import { MANAGER_PLAYERS as PLAYERS } from '../data/players'
 import type { Position } from '../types'
 
 const byId = new Map(PLAYERS.map((p) => [p.id, p]))

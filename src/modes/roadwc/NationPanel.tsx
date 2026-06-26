@@ -61,8 +61,8 @@ export default function NationPanel() {
 
   return (
     <div className="glass flex h-full flex-col">
-      <div className="border-b border-white/10 p-3">
-        <div className="mb-2 flex items-center justify-between text-xs">
+      <div className="border-b border-white/10 p-2.5">
+        <div className="mb-1.5 flex items-center justify-between text-xs">
           <span className="font-bold tracking-wide text-white/90">PICK {Math.min(filled + 1, total)} / {total}</span>
           <span className="flex items-center gap-2 text-white/55">
             Rerolls
@@ -74,21 +74,22 @@ export default function NationPanel() {
           </span>
         </div>
 
-        <div className={`flex items-center gap-3 rounded-xl border border-white/10 bg-black/30 px-3 py-3 ${rolling ? 'animate-pulse' : ''}`}>
-          <span className="text-4xl">{flag(shown ?? '')}</span>
-          <div className="min-w-0">
-            <div className="text-[10px] uppercase tracking-wide text-white/40">{rolling ? 'Spinning…' : 'Your nation'}</div>
-            <div className="truncate text-xl font-black text-white">{shown ?? '—'}</div>
+        <div className="flex items-center gap-2">
+          <div className={`flex flex-1 items-center gap-2.5 rounded-xl border border-white/10 bg-black/30 px-3 py-2 ${rolling ? 'animate-pulse' : ''}`}>
+            <span className="text-3xl">{flag(shown ?? '')}</span>
+            <div className="min-w-0">
+              <div className="text-[10px] uppercase tracking-wide text-white/40">{rolling ? 'Spinning…' : 'Your nation'}</div>
+              <div className="truncate text-lg font-black leading-tight text-white">{shown ?? '—'}</div>
+            </div>
           </div>
+          <button
+            onClick={reroll}
+            disabled={rerollsLeft <= 0 || rolling}
+            className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white/80 transition enabled:hover:bg-white/10 disabled:opacity-40"
+          >
+            🎲 {rerollsLeft}
+          </button>
         </div>
-
-        <button
-          onClick={reroll}
-          disabled={rerollsLeft <= 0 || rolling}
-          className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/80 transition enabled:hover:bg-white/10 disabled:opacity-40"
-        >
-          🎲 Reroll nation ({rerollsLeft} left)
-        </button>
 
         {!rolling && (
           <>

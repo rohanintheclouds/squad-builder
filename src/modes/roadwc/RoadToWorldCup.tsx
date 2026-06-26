@@ -22,12 +22,12 @@ export default function RoadToWorldCup({ onExit }: { onExit: () => void }) {
     // panel gets a guaranteed bottom slice so the player list is always usable.
     return (
       <div className="flex h-full flex-col">
-        <div className="flex min-h-0 flex-1 items-center justify-center p-2">
-          <div className="h-full" style={{ aspectRatio: '80 / 105' }}>
+        <div className="flex min-h-0 flex-1 items-center justify-center p-1.5">
+          <div className="h-full" style={{ aspectRatio: '76 / 105' }}>
             <WcPitch compact />
           </div>
         </div>
-        <div className="h-[50vh] shrink-0 border-t border-white/10">
+        <div className="h-[38vh] shrink-0 border-t border-white/10">
           <NationPanel />
         </div>
       </div>

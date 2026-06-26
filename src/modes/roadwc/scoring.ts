@@ -1,16 +1,13 @@
 import { PLAYERS } from '../../data/players'
 
-// A hidden "skill" with more spread than the displayed rating, derived from market value.
-// €23M -> ~78, €50M -> ~86, €100M -> ~92, €200M -> 99. Never shown to the player.
-export function skill(value: number): number {
-  return Math.max(70, Math.min(99, Math.round(47.7 + 22.3 * Math.log10(value))))
-}
-
-// Bell-curve calibration from a Monte-Carlo of real drafts (2000 casual + 1000 expert runs):
-// casual play averages ~82.5 skill, expert play ~86.7. Centering the curve here puts an
-// average team at Round of 16 / Quarter and makes the World Cup Winner tier genuinely rare.
+// World Cup scoring uses each player's hidden rating (see src/data/ratings.ts).
+// Bell-curve calibration from a Monte-Carlo of real drafts: casual play averages ~CASUAL
+// rating, expert play higher. Centering the curve puts an average team at Round of 16 /
+// Quarter and makes the World Cup Winner tier genuinely rare (exponentially hard tails).
 const MEAN = 82.5
-const TEAM_SD = 3.0
+const TEAM_SD = 2.0
+
+const byId = new Map(PLAYERS.map((p) => [p.id, p]))
 
 // Standard normal CDF (Abramowitz & Stegun approximation).
 function normalCdf(z: number): number {
@@ -42,9 +39,8 @@ export const TIERS: Tier[] = [
 ]
 
 export function scoreTeam(playerIds: string[]): { avg: number; percentile: number; tier: Tier } {
-  const byId = new Map(PLAYERS.map((p) => [p.id, p]))
-  const vals = playerIds.map((id) => byId.get(id)).filter(Boolean).map((p) => skill(p!.value))
-  const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0
+  const ratings = playerIds.map((id) => byId.get(id)).filter(Boolean).map((p) => p!.rating)
+  const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
   const z = TEAM_SD > 0 ? (avg - MEAN) / TEAM_SD : 0
   const percentile = normalCdf(z)
   const tier = TIERS.find((t) => percentile >= t.minPercentile) ?? TIERS[TIERS.length - 1]

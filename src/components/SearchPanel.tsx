@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { useStore } from '../store'
-import { PLAYERS } from '../data/players'
+import { MANAGER_PLAYERS as PLAYERS } from '../data/players'
 import { FORMATIONS } from '../data/formations'
 import { TACTICS } from '../data/tactics'
 import { eligibility, ELIGIBILITY_COLOR } from '../lib/positions'
@@ -37,8 +37,8 @@ function Row({ player, eligColor, already, tooPricey, clickable, blocked, dragga
         ${already && !blocked ? 'opacity-45' : ''}`}
     >
       {eligColor && <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: eligColor }} />}
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-yellow-200 to-yellow-500 text-[12px] font-black text-black shadow">
-        {player.rating}
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-yellow-200 to-yellow-500 text-[11px] font-black text-black shadow">
+        {player.primaryPos}
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5 truncate text-sm font-semibold text-white">
@@ -90,7 +90,7 @@ export default function SearchPanel({ draggable = true, onAfterAssign }: { dragg
       if (q && !`${p.name} ${p.club}`.toLowerCase().includes(q.toLowerCase())) return false
       if (posFilter !== 'ALL' && !p.eligiblePos.includes(posFilter)) return false
       if (leagueFilter !== 'ALL' && p.league !== leagueFilter) return false
-      if (maxPrice !== '' && p.value > maxPrice) return false
+      if (maxPrice !== '' && (p.value ?? 0) > maxPrice) return false
       return true
     })
 
@@ -103,7 +103,7 @@ export default function SearchPanel({ draggable = true, onAfterAssign }: { dragg
           if (tactic.emphasis.includes(p.primaryPos)) score += 1.5
           else if (p.eligiblePos.some((pos) => tactic.emphasis.includes(pos))) score += 0.5
           score += p.rating / 50
-          if (p.value > remaining) score -= 2
+          if ((p.value ?? 0) > remaining) score -= 2
           return { p, elig, score }
         })
         .filter((r) => r.elig !== 'red')
@@ -166,7 +166,7 @@ export default function SearchPanel({ draggable = true, onAfterAssign }: { dragg
               player={p}
               eligColor={elig ? ELIGIBILITY_COLOR[elig] : undefined}
               already={inLineup.has(p.id)}
-              tooPricey={selectedSlot ? p.value > remaining : false}
+              tooPricey={selectedSlot ? (p.value ?? 0) > remaining : false}
               clickable={!!selectedSlot}
               blocked={elig === 'amber' && amberAtLimit && lineup[selectedSlot!.id]?.playerId !== p.id}
               draggable={draggable}

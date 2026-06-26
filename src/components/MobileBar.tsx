@@ -2,7 +2,8 @@ import { useMemo } from 'react'
 import { useStore } from '../store'
 import { FORMATIONS, FORMATION_GROUPS } from '../data/formations'
 import { TACTICS } from '../data/tactics'
-import { PLAYERS } from '../data/players'
+import { MANAGER_PLAYERS as PLAYERS } from '../data/players'
+import { teamRating } from '../lib/squad'
 import { fmtValue } from '../lib/format'
 
 const GROUPS = ['3-Back', '4-Back', '5-Back'] as const
@@ -20,9 +21,7 @@ export default function MobileBar() {
   const pct = Math.min(100, budgetCap > 0 ? (spent / budgetCap) * 100 : 0)
   const filled = entries.length
   const total = FORMATIONS.find((f) => f.name === formationName)!.slots.length
-  const avgRating = filled
-    ? Math.round(entries.reduce((s, e) => s + (PLAYERS.find((p) => p.id === e.playerId)?.rating ?? 0), 0) / filled)
-    : 0
+  const { rating: teamRtg, avgAge } = teamRating(entries.map((e) => e.playerId))
 
   return (
     <div className="glass border-b border-white/10 px-3 pb-2 pt-2.5">
@@ -31,7 +30,8 @@ export default function MobileBar() {
           <span className="text-emerald-400">●</span> Squad Builder
         </div>
         <div className="flex items-center gap-3 text-[11px]">
-          <span className="text-white/70">⭐ <b className="text-white">{avgRating}</b></span>
+          <span className="text-white/70">RTG <b className="text-white">{teamRtg}</b></span>
+          {avgAge > 0 && <span className="text-white/50">{avgAge}y</span>}
           <span className={over ? 'text-red-400' : 'text-emerald-300'}>
             {over ? `-${fmtValue(Math.abs(remaining))}` : fmtValue(remaining)}
           </span>

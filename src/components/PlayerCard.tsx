@@ -28,7 +28,7 @@ export default function PlayerCard({
   hideRating?: boolean
 }) {
   // When the rating is hidden we still want gold/silver tiers to feel varied, so tint by value.
-  const t = tier(hideRating ? Math.min(94, 78 + player.value / 8) : player.rating)
+  const t = tier(hideRating ? Math.min(94, 78 + (player.value ?? 30) / 8) : player.rating)
   const last = player.name.split(' ').slice(-1)[0]
   return (
     <div
@@ -46,8 +46,8 @@ export default function PlayerCard({
           <div className="leading-none">
             {hideRating ? (
               <div className="flex items-baseline gap-0.5">
-                <span className="text-[18px] font-black tracking-tight">{Math.round(player.value)}</span>
-                <span className="text-[8px] font-bold opacity-70">€M</span>
+                <span className="text-[18px] font-black tracking-tight">{player.value != null ? Math.round(player.value) : '—'}</span>
+                {player.value != null && <span className="text-[8px] font-bold opacity-70">€M</span>}
               </div>
             ) : (
               <div className="text-[20px] font-black tracking-tight">{player.rating}</div>

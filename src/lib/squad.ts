@@ -1,5 +1,5 @@
 import { FORMATIONS } from '../data/formations'
-import { PLAYERS } from '../data/players'
+import { MANAGER_PLAYERS as PLAYERS } from '../data/players'
 import { eligibility } from './positions'
 import type { Eligibility, SquadEntry } from '../types'
 
@@ -35,3 +35,16 @@ export function amberCount(lineup: Record<string, SquadEntry>, formationName: st
 }
 
 export const lastName = (full: string) => full.split(' ').slice(-1)[0]
+
+/**
+ * Squad Builder team rating (shown at the top). Future-aware: blends current ability with
+ * potential and penalises an old average age, so you can't stack cheap veterans for a top team.
+ */
+export function teamRating(playerIds: string[]): { rating: number; avgAge: number } {
+  const ps = playerIds.map((id) => playerById.get(id)).filter(Boolean) as { rating: number; potential: number; age: number }[]
+  if (!ps.length) return { rating: 0, avgAge: 0 }
+  const future = ps.reduce((a, p) => a + 0.5 * p.rating + 0.5 * p.potential, 0) / ps.length
+  const avgAge = ps.reduce((a, p) => a + p.age, 0) / ps.length
+  const agePenalty = Math.max(0, (avgAge - 29) * 1.2)
+  return { rating: Math.round(future - agePenalty), avgAge: Math.round(avgAge) }
+}

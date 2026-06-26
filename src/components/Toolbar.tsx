@@ -2,7 +2,8 @@ import { useMemo } from 'react'
 import { useStore } from '../store'
 import { FORMATIONS, FORMATION_GROUPS } from '../data/formations'
 import { TACTICS } from '../data/tactics'
-import { PLAYERS } from '../data/players'
+import { MANAGER_PLAYERS as PLAYERS } from '../data/players'
+import { teamRating } from '../lib/squad'
 import { fmtValue } from '../lib/format'
 
 const GROUPS = ['3-Back', '4-Back', '5-Back'] as const
@@ -21,10 +22,8 @@ export default function Toolbar() {
   const entries = Object.values(lineup)
   const filled = entries.length
   const total = FORMATIONS.find((f) => f.name === formationName)!.slots.length
-  const avgRating = filled
-    ? Math.round(entries.reduce((s, e) => s + (PLAYERS.find((p) => p.id === e.playerId)?.rating ?? 0), 0) / filled)
-    : 0
-  const stars = Math.min(5, Math.round(avgRating / 20))
+  const { rating: teamRtg, avgAge } = teamRating(entries.map((e) => e.playerId))
+  const stars = Math.min(5, Math.round(teamRtg / 20))
 
   return (
     <div className="glass border-b border-white/10">
@@ -65,9 +64,9 @@ export default function Toolbar() {
 
         <div className="ml-auto flex items-center gap-5">
           <div className="text-right">
-            <div className="text-[10px] uppercase tracking-wide text-white/40">Squad Rating</div>
+            <div className="text-[10px] uppercase tracking-wide text-white/40">Team Rating</div>
             <div className="flex items-center justify-end gap-1.5">
-              <span className="text-sm font-bold text-white">{avgRating}</span>
+              <span className="text-sm font-bold text-white">{teamRtg}</span>
               <span className="text-[11px] tracking-tight">
                 {Array.from({ length: 5 }, (_, i) => (
                   <span key={i} className={i < stars ? 'text-amber-400' : 'text-white/20'}>★</span>
@@ -75,6 +74,7 @@ export default function Toolbar() {
               </span>
             </div>
           </div>
+          <Stat label="Avg Age" value={avgAge ? String(avgAge) : '—'} />
           <Stat label="Spent" value={fmtValue(spent)} />
           <Stat label="Remaining" value={over ? `-${fmtValue(Math.abs(remaining))}` : fmtValue(remaining)} tone={over ? 'bad' : 'good'} />
           <Stat label="Filled" value={`${filled}/${total}`} />

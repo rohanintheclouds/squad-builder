@@ -11,10 +11,14 @@ export type Player = {
   club: string
   league: string
   nationality: string
-  /** Market value in millions of euros. Real-life value, not a game price. */
-  value: number
-  /** Overall quality 0-99, used for sorting and suggestions. */
+  /** Market value in millions of euros (Transfermarkt). null = no transfer fee (World Cup mode only). */
+  value: number | null
+  /** Current ability 0-99 (hidden). World Cup scoring uses this. */
   rating: number
+  /** Future outlook 0-99 (hidden): current ability adjusted for age (youth upside, veteran decline). */
+  potential: number
+  /** Age in years. */
+  age: number
   primaryPos: Position
   /** All positions the player can credibly fill (includes primary). */
   eligiblePos: Position[]

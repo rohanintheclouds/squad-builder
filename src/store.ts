@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { FORMATIONS } from './data/formations'
 import { TACTICS } from './data/tactics'
-import { PLAYERS } from './data/players'
+import { MANAGER_PLAYERS as PLAYERS } from './data/players'
 import { eligibility } from './lib/positions'
 import { AMBER_LIMIT, amberCount, slotTypeMap, lastName } from './lib/squad'
 import type { Position, SquadEntry } from './types'

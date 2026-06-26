@@ -11,7 +11,7 @@ import PlayerCard from '../../components/PlayerCard'
 import Toast from '../../components/Toast'
 import { useStore } from '../../store'
 import { FORMATIONS } from '../../data/formations'
-import { PLAYERS } from '../../data/players'
+import { MANAGER_PLAYERS as PLAYERS } from '../../data/players'
 import { eligibility } from '../../lib/positions'
 import { useMediaQuery } from '../../lib/useMediaQuery'
 import type { Player, Position } from '../../types'
@@ -119,7 +119,7 @@ export default function ManagerMode() {
       <DragOverlay dropAnimation={null}>
         {active && (
           <div className="rotate-3 scale-110">
-            <PlayerCard player={active.player} slotType={active.pos} eligibility={eligibility(active.player, active.pos)} />
+            <PlayerCard player={active.player} slotType={active.pos} eligibility={eligibility(active.player, active.pos)} hideRating />
           </div>
         )}
       </DragOverlay>

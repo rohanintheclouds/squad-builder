@@ -6,7 +6,7 @@ import PlayerCard from '../../components/PlayerCard'
 
 export default function ResultView({ onExit }: { onExit: () => void }) {
   const { pickedIds, lineup, formationName, start } = useWcStore()
-  const { percentile, tier } = scoreTeam(pickedIds)
+  const { avg, percentile, tier } = scoreTeam(pickedIds)
   const topPct = Math.max(1, Math.round((1 - percentile) * 100))
   const formation = formationName ? FORMATIONS.find((f) => f.name === formationName)! : null
 
@@ -16,7 +16,7 @@ export default function ResultView({ onExit }: { onExit: () => void }) {
         <div className="text-xs uppercase tracking-[0.2em] text-white/40">Your result</div>
         <div className="my-2 text-4xl font-black sm:text-5xl" style={{ color: tier.color }}>{tier.label}</div>
         <div className="text-sm text-white/70">{tier.blurb}</div>
-        <div className="mt-1 text-xs text-white/45">Top {topPct}% of all possible teams</div>
+        <div className="mt-1 text-xs text-white/45">Top {topPct}% of all possible teams · squad strength {Math.round(avg)}</div>
       </div>
 
       {/* tier ladder */}
@@ -34,7 +34,7 @@ export default function ResultView({ onExit }: { onExit: () => void }) {
       </div>
 
       {/* the squad, ratings revealed */}
-      <div className="mb-2 text-center text-sm font-semibold text-white/70">Your {formationName} XI (ratings revealed)</div>
+      <div className="mb-2 text-center text-sm font-semibold text-white/70">Your {formationName} XI</div>
       <div className="mb-6 flex flex-wrap justify-center gap-2">
         {formation?.slots.map((slot) => {
           const pid = lineup[slot.id]
@@ -42,7 +42,7 @@ export default function ResultView({ onExit }: { onExit: () => void }) {
           if (!p) return null
           return (
             <div key={slot.id} style={{ transform: 'scale(0.82)' }}>
-              <PlayerCard player={p} slotType={slot.type} eligibility={eligibility(p, slot.type)} />
+              <PlayerCard player={p} slotType={slot.type} eligibility={eligibility(p, slot.type)} hideRating />
             </div>
           )
         })}

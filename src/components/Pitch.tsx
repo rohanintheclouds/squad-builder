@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useDroppable, useDraggable } from '@dnd-kit/core'
 import { useStore } from '../store'
 import { FORMATIONS } from '../data/formations'
-import { PLAYERS } from '../data/players'
+import { MANAGER_PLAYERS as PLAYERS } from '../data/players'
 import { eligibility } from '../lib/positions'
 import { amberCount, AMBER_LIMIT } from '../lib/squad'
 import type { FormationSlot, Position } from '../types'
@@ -46,7 +46,7 @@ function Slot({ slot, onEditRole, compact, draggable }: {
               className={`block ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
               title={draggable ? 'Drag to move · click to set role' : 'Tap to set role'}
             >
-              <PlayerCard player={player} slotType={slot.type} eligibility={elig} role={entry?.role} focus={entry?.focus} />
+              <PlayerCard player={player} slotType={slot.type} eligibility={elig} role={entry?.role} focus={entry?.focus} hideRating />
             </button>
             <span
               role="button"
