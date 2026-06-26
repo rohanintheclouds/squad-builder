@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import { byId, type Draft } from './engine'
 import { FORMATIONS } from '../../data/formations'
 import { scoreTeam } from './scoring'
 import { eligibility } from '../../lib/positions'
+import { recordBestTier } from '../../lib/progress'
 import PlayerCard from '../../components/PlayerCard'
 
 export default function ResultView({ draft, onExit }: { draft: Draft; onExit: () => void }) {
@@ -10,6 +12,11 @@ export default function ResultView({ draft, onExit }: { draft: Draft; onExit: ()
   const { avg, percentile, tier } = scoreTeam(pickedIds, tiers)
   const topPct = Math.max(1, Math.round((1 - percentile) * 100))
   const formation = formationName ? FORMATIONS.find((f) => f.name === formationName)! : null
+
+  // remember best placement for this mode
+  useEffect(() => {
+    recordBestTier(draft.config.id, tier, tiers.findIndex((t) => t.key === tier.key))
+  }, [draft.config.id, tier, tiers])
 
   return (
     <div className="mx-auto flex h-full w-full max-w-5xl flex-col overflow-y-auto px-4 py-6">

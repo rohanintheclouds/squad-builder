@@ -55,6 +55,13 @@ export function eligibility(player: Player, slot: Position): Eligibility {
   return flex.has(slot) ? 'amber' : 'red'
 }
 
+/** Relation between two positions (for Guess the Player): exact, semi-related, or unrelated. */
+export function positionsRelation(a: Position, b: Position): 'same' | 'related' | 'none' {
+  if (a === b) return 'same'
+  if (GREEN_FLEX[a]?.includes(b) || GREEN_FLEX[b]?.includes(a) || ADJACENCY[a].includes(b) || ADJACENCY[b].includes(a)) return 'related'
+  return 'none'
+}
+
 export const ELIGIBILITY_COLOR: Record<Eligibility, string> = {
   green: '#22c55e',
   amber: '#f59e0b',

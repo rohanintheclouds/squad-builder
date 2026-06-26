@@ -24,17 +24,22 @@ function FormationMini({ name }: { name: string }) {
 export default function FormationChoice({ draft }: { draft: Draft }) {
   const { formationChoices, chooseFormation } = draft.useStore()
   return (
-    <div className="mx-auto flex h-full max-w-4xl flex-col items-center justify-center px-4 py-6">
-      <div className="mb-1 text-center text-2xl font-black text-white">Choose your formation</div>
-      <div className="mb-6 text-center text-sm text-white/55">5 random shapes. Pick one to start the draft.</div>
-      <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
-        {formationChoices.map((name) => (
-          <button key={name} onClick={() => chooseFormation(name)}
-            className="glass group rounded-xl border border-white/10 p-3 transition hover:border-blue-400 hover:-translate-y-1">
-            <FormationMini name={name} />
-            <div className="mt-2 text-center text-sm font-bold text-white">{name}</div>
-          </button>
-        ))}
+    <div className="mx-auto flex h-full max-w-4xl flex-col px-4 py-5">
+      <div className="shrink-0 text-center">
+        <div className="text-2xl font-black text-white sm:text-3xl">Pick your formation</div>
+        <div className="mt-1 text-sm text-white/55">5 random shapes — tap one to start the draft.</div>
+      </div>
+      {/* mobile: horizontal swipe carousel · desktop: 5-across grid */}
+      <div className="flex min-h-0 flex-1 items-center">
+        <div className="flex w-full snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-3 sm:grid sm:grid-cols-5 sm:gap-4 sm:overflow-visible">
+          {formationChoices.map((name) => (
+            <button key={name} onClick={() => chooseFormation(name)}
+              className="glass group w-[42vw] max-w-[200px] shrink-0 snap-center rounded-xl border border-white/10 p-3 transition hover:border-blue-400 hover:-translate-y-1 sm:w-auto sm:max-w-none">
+              <FormationMini name={name} />
+              <div className="mt-2 text-center text-sm font-bold text-white">{name}</div>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   )

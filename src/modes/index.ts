@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 import ManagerMode from './manager/ManagerMode'
 import RoadToWorldCup from './roadwc'
 import RoadToCL from './roadcl'
+import GuessThePlayer from './guess/GuessThePlayer'
 
 export type GameMode = {
   id: string
@@ -37,5 +38,13 @@ export const MODES: GameMode[] = [
     emoji: '⭐',
     accent: '#818cf8',
     Component: RoadToCL,
+  },
+  {
+    id: 'guess',
+    name: 'Guess the Player',
+    tagline: 'Six guesses to find the mystery player. Each guess reveals club, nation, position, age, height and value clues.',
+    emoji: '🔍',
+    accent: '#22d3ee',
+    Component: GuessThePlayer,
   },
 ]

@@ -19,6 +19,10 @@ export type Player = {
   potential: number
   /** Age in years. */
   age: number
+  /** Height in centimetres (displayed in feet/inches). */
+  heightCm: number
+  /** Preferred foot. */
+  foot: 'Left' | 'Right' | 'Both'
   primaryPos: Position
   /** All positions the player can credibly fill (includes primary). */
   eligiblePos: Position[]

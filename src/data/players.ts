@@ -17,6 +17,8 @@ type RawPlayer = {
   value: number | null
   positions: Position[]
   age?: number
+  heightCm?: number
+  foot?: 'Left' | 'Right' | 'Both'
 }
 
 const seen = new Set<string>()
@@ -39,6 +41,8 @@ export const PLAYERS: Player[] = (raw as RawPlayer[])
       rating,
       potential: potentialFor(rating, age),
       age,
+      heightCm: p.heightCm ?? 180,
+      foot: p.foot ?? 'Right',
       primaryPos: p.positions[0],
       eligiblePos: p.positions,
     }
