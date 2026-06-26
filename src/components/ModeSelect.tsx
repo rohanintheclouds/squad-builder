@@ -1,14 +1,18 @@
 import { MODES } from '../modes'
-import { getBestTier, getStreak, getBestStreak } from '../lib/progress'
+import { getBestTier, getStreak, getBestStreak, getLastGuessMode, type GuessDiff } from '../lib/progress'
 
 function Banner({ id }: { id: string }) {
   if (id === 'guess') {
-    const s = getStreak(), b = getBestStreak()
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-200">
-        🔥 Streak {s} · Best {b}
+    const last = getLastGuessMode() ?? 'hard'
+    const other: GuessDiff = last === 'hard' ? 'casual' : 'hard'
+    const label = (d: GuessDiff) => (d === 'hard' ? 'Fanatic' : 'Casual')
+    const pill = (d: GuessDiff, cls = '') => (
+      <span className={`inline-flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-200 ${cls}`}>
+        🔥 {label(d)} {getStreak(d)} · Best {getBestStreak(d)}
       </span>
     )
+    // mobile: only the most-recently-played mode · desktop: both
+    return <div className="flex flex-wrap gap-1.5">{pill(last)}{pill(other, 'hidden sm:inline-flex')}</div>
   }
   if (id === 'roadwc' || id === 'roadcl') {
     const best = getBestTier(id === 'roadwc' ? 'wc' : 'cl')

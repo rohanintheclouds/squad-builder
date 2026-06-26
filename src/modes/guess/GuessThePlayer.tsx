@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { PLAYERS } from '../../data/players'
 import { useMediaQuery } from '../../lib/useMediaQuery'
-import { getStreak, recordGuessWin, recordGuessLoss } from '../../lib/progress'
+import { getStreak, getBestStreak, recordGuessWin, recordGuessLoss, setLastGuessMode, type GuessDiff } from '../../lib/progress'
 import { compare, MAX_GUESSES, type Cell, type Color } from './compare'
 import type { Player } from '../../types'
 
@@ -9,9 +9,13 @@ import type { Player } from '../../types'
 const DESKTOP_COLS = 'minmax(120px,1.7fr) repeat(7, minmax(0,1fr))'
 const MOBILE_COLS = '128px 98px 126px 116px 66px 56px 74px 84px'
 const HEADERS = ['Name', 'Club', 'Nation', 'Position', 'Foot', 'Age', 'Height', 'Value']
+const CASUAL_SIZE = 150
 
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
-const randomPlayer = () => PLAYERS[Math.floor(Math.random() * PLAYERS.length)]
+// Casual pool = the 150 most valuable (most recognisable) players. Fanatic = everyone.
+const TOP_150 = [...PLAYERS].sort((a, b) => (b.value ?? 0) - (a.value ?? 0)).slice(0, CASUAL_SIZE)
+const poolFor = (d: GuessDiff) => (d === 'casual' ? TOP_150 : PLAYERS)
+const randomFrom = (pool: Player[]) => pool[Math.floor(Math.random() * pool.length)]
 
 const CELL_BG: Record<Color, string> = {
   green: 'bg-emerald-500/30 border-emerald-400/50 text-emerald-50',
@@ -37,36 +41,66 @@ function Row({ cells, cols }: { cells: Cell[]; cols: string }) {
 }
 
 export default function GuessThePlayer({ onExit }: { onExit: () => void }) {
-  const [target, setTarget] = useState<Player>(randomPlayer)
+  const [difficulty, setDifficulty] = useState<GuessDiff | null>(null)
+  const [target, setTarget] = useState<Player | null>(null)
   const [guesses, setGuesses] = useState<Player[]>([])
   const [query, setQuery] = useState('')
-  const [streak, setStreak] = useState(getStreak)
+  const [streak, setStreak] = useState(0)
   const isMobile = useMediaQuery('(max-width: 640px)')
   const cols = isMobile ? MOBILE_COLS : DESKTOP_COLS
+  const pool = difficulty ? poolFor(difficulty) : PLAYERS
 
-  const won = guesses.some((g) => g.id === target.id)
-  const lost = !won && guesses.length >= MAX_GUESSES
+  const won = !!target && guesses.some((g) => g.id === target.id)
+  const lost = !!target && !won && guesses.length >= MAX_GUESSES
   const done = won || lost
 
   const matches = useMemo(() => {
     const q = norm(query.trim())
     if (!q) return []
     const guessed = new Set(guesses.map((g) => g.id))
-    return PLAYERS.filter((p) => !guessed.has(p.id) && norm(p.name).includes(q)).slice(0, 6)
-  }, [query, guesses])
+    return pool.filter((p) => !guessed.has(p.id) && norm(p.name).includes(q)).slice(0, 6)
+  }, [query, guesses, pool])
+
+  function start(d: GuessDiff) {
+    setDifficulty(d); setLastGuessMode(d)
+    setTarget(randomFrom(poolFor(d))); setGuesses([]); setQuery(''); setStreak(getStreak(d))
+  }
 
   function guess(p: Player) {
-    if (done) return
+    if (done || !target || !difficulty) return
     const next = [...guesses, p]
     setGuesses(next)
     setQuery('')
-    if (p.id === target.id) setStreak(recordGuessWin())
-    else if (next.length >= MAX_GUESSES) { recordGuessLoss(); setStreak(0) }
+    if (p.id === target.id) setStreak(recordGuessWin(difficulty))
+    else if (next.length >= MAX_GUESSES) { recordGuessLoss(difficulty); setStreak(0) }
   }
 
   function newGame() {
-    setTarget(randomPlayer()); setGuesses([]); setQuery('')
-    setStreak(getStreak()) // re-read in case another mode changed it
+    setTarget(randomFrom(pool)); setGuesses([]); setQuery('')
+    if (difficulty) setStreak(getStreak(difficulty))
+  }
+
+  // difficulty picker
+  if (!difficulty || !target) {
+    const Card = ({ d, emoji, title, blurb }: { d: GuessDiff; emoji: string; title: string; blurb: string }) => (
+      <button onClick={() => start(d)}
+        className="glass group flex-1 rounded-2xl border border-white/10 p-5 text-left transition hover:-translate-y-1 hover:border-blue-400">
+        <div className="text-3xl">{emoji}</div>
+        <div className="mt-2 text-lg font-black text-white">{title}</div>
+        <div className="mt-1 text-sm leading-snug text-white/55">{blurb}</div>
+        <div className="mt-3 text-xs font-semibold text-blue-200/80">Best streak: {getBestStreak(d)}</div>
+      </button>
+    )
+    return (
+      <div className="mx-auto flex h-full max-w-3xl flex-col items-center justify-center px-4 py-6">
+        <div className="mb-1 text-center text-2xl font-black text-white sm:text-3xl">Do You Know Ball?</div>
+        <div className="mb-6 text-center text-sm text-white/55">Pick a difficulty.</div>
+        <div className="flex w-full flex-col gap-4 sm:flex-row">
+          <Card d="hard" emoji="🧠" title="Futbol Fanatic" blurb={`Hard mode — the mystery player can be ANY of the ${PLAYERS.length} players in the database.`} />
+          <Card d="casual" emoji="🌥️" title="Casual Play" blurb={`Easier — only the top ${CASUAL_SIZE} players (by value) are in play.`} />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -94,7 +128,7 @@ export default function GuessThePlayer({ onExit }: { onExit: () => void }) {
           )}
         </div>
         <div className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center text-xs">
-          <div className="text-[10px] uppercase tracking-wide text-white/40">Streak</div>
+          <div className="text-[10px] uppercase tracking-wide text-white/40">{difficulty === 'hard' ? 'Fanatic' : 'Casual'} streak</div>
           <div className="font-bold text-white">{streak}{streak >= 3 ? ' 🔥' : ''}</div>
         </div>
       </div>
@@ -138,9 +172,10 @@ export default function GuessThePlayer({ onExit }: { onExit: () => void }) {
             ) : (
               <div className="mt-3 text-sm font-semibold text-white/60">Streak reset to 0.</div>
             )}
-            <div className="mt-5 flex justify-center gap-3">
+            <div className="mt-5 flex flex-wrap justify-center gap-2.5">
               <button onClick={newGame} className="rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-bold text-black hover:bg-blue-400">Play again</button>
-              <button onClick={onExit} className="rounded-lg border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10">Back to modes</button>
+              <button onClick={() => setDifficulty(null)} className="rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10">Switch mode</button>
+              <button onClick={onExit} className="rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10">Back to modes</button>
             </div>
           </div>
         </div>

@@ -15,13 +15,19 @@ export function recordBestTier(id: string, tier: { label: string; color: string 
   if (!cur || rank < cur.rank) lsSet(`squadlab-best-${id}`, JSON.stringify({ label: tier.label, color: tier.color, rank }))
 }
 
-// Guess the Player streaks
-export const getStreak = () => Number(lsGet('squadlab-gtp-streak') || 0)
-export const getBestStreak = () => Number(lsGet('squadlab-gtp-best') || 0)
-export function recordGuessWin(): number {
-  const s = getStreak() + 1
-  lsSet('squadlab-gtp-streak', String(s))
-  if (s > getBestStreak()) lsSet('squadlab-gtp-best', String(s))
+// Do You Know Ball streaks — tracked separately per difficulty.
+export type GuessDiff = 'hard' | 'casual'
+const sKey = (d: GuessDiff) => `squadlab-gtp-${d}-streak`
+const bKey = (d: GuessDiff) => `squadlab-gtp-${d}-best`
+
+export const getStreak = (d: GuessDiff) => Number(lsGet(sKey(d)) || 0)
+export const getBestStreak = (d: GuessDiff) => Number(lsGet(bKey(d)) || 0)
+export function recordGuessWin(d: GuessDiff): number {
+  const s = getStreak(d) + 1
+  lsSet(sKey(d), String(s))
+  if (s > getBestStreak(d)) lsSet(bKey(d), String(s))
   return s
 }
-export function recordGuessLoss() { lsSet('squadlab-gtp-streak', '0') }
+export function recordGuessLoss(d: GuessDiff) { lsSet(sKey(d), '0') }
+export const getLastGuessMode = (): GuessDiff | null => (lsGet('squadlab-gtp-last') as GuessDiff | null) || null
+export const setLastGuessMode = (d: GuessDiff) => lsSet('squadlab-gtp-last', d)
