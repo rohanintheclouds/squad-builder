@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { FORMATIONS } from '../../data/formations'
 import type { Position } from '../../types'
 import type { Draft } from './engine'
@@ -23,6 +24,7 @@ function FormationMini({ name }: { name: string }) {
 
 export default function FormationChoice({ draft }: { draft: Draft }) {
   const { formationChoices, chooseFormation } = draft.useStore()
+  const [scrolled, setScrolled] = useState(false)
   return (
     <div className="mx-auto flex h-full max-w-4xl flex-col px-4 py-5">
       <div className="shrink-0 text-center">
@@ -31,7 +33,10 @@ export default function FormationChoice({ draft }: { draft: Draft }) {
       </div>
       {/* mobile: horizontal swipe carousel · desktop: 5-across grid */}
       <div className="flex min-h-0 flex-1 items-center">
-        <div className="flex w-full snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-3 sm:grid sm:grid-cols-5 sm:gap-4 sm:overflow-visible">
+        <div
+          onScroll={(e) => { if (e.currentTarget.scrollLeft > 12) setScrolled(true) }}
+          className="flex w-full snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-3 sm:grid sm:grid-cols-5 sm:gap-4 sm:overflow-visible"
+        >
           {formationChoices.map((name) => (
             <button key={name} onClick={() => chooseFormation(name)}
               className="glass group w-[42vw] max-w-[200px] shrink-0 snap-center rounded-xl border border-white/10 p-3 transition hover:border-blue-400 hover:-translate-y-1 sm:w-auto sm:max-w-none">
@@ -40,6 +45,12 @@ export default function FormationChoice({ draft }: { draft: Draft }) {
             </button>
           ))}
         </div>
+      </div>
+      {/* mobile-only swipe hint, fades out once you start scrolling */}
+      <div
+        className={`pointer-events-none shrink-0 pb-1 text-center text-xs font-semibold text-blue-200/80 transition-opacity duration-700 sm:hidden ${scrolled ? 'opacity-0' : 'opacity-100'}`}
+      >
+        → Swipe to see all {formationChoices.length} formations
       </div>
     </div>
   )
