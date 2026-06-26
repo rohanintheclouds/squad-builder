@@ -13,26 +13,27 @@ import type { Player, Position } from '../types'
 const ALL_POS: Position[] = ['GK','RB','RWB','CB','LB','LWB','CDM','CM','CAM','RM','LM','RW','LW','CF','ST']
 const LEAGUES = Array.from(new Set(PLAYERS.map((p) => p.league))).sort()
 
-function Row({ player, eligColor, already, tooPricey, clickable, blocked, onAssign }: {
+function Row({ player, eligColor, already, tooPricey, clickable, blocked, draggable, onAssign }: {
   player: Player
   eligColor?: string
   already: boolean
   tooPricey: boolean
   clickable: boolean
   blocked: boolean
+  draggable: boolean
   onAssign: () => void
 }) {
-  const { setNodeRef, listeners, attributes, isDragging } = useDraggable({ id: `search:${player.id}`, disabled: blocked })
+  const { setNodeRef, listeners, attributes, isDragging } = useDraggable({ id: `search:${player.id}`, disabled: blocked || !draggable })
   const canClick = clickable && !blocked
+  const dragProps = draggable && !blocked ? { ...listeners, ...attributes } : {}
   return (
     <div
       ref={setNodeRef}
-      {...(blocked ? {} : listeners)}
-      {...(blocked ? {} : attributes)}
+      {...dragProps}
       onClick={() => canClick && onAssign()}
       className={`flex items-center gap-2.5 border-b border-white/5 px-3 py-2 text-left transition
         ${isDragging ? 'opacity-40' : ''}
-        ${blocked ? 'cursor-not-allowed opacity-45' : canClick ? 'cursor-grab hover:bg-cyan-500/10 active:cursor-grabbing' : 'cursor-grab'}
+        ${blocked ? 'cursor-not-allowed opacity-45' : canClick ? `${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} hover:bg-cyan-500/10` : draggable ? 'cursor-grab' : 'cursor-default'}
         ${already && !blocked ? 'opacity-45' : ''}`}
     >
       {eligColor && <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: eligColor }} />}
@@ -60,7 +61,7 @@ function Row({ player, eligColor, already, tooPricey, clickable, blocked, onAssi
   )
 }
 
-export default function SearchPanel() {
+export default function SearchPanel({ draggable = true, onAfterAssign }: { draggable?: boolean; onAfterAssign?: () => void } = {}) {
   const { formationName, tacticId, lineup, budgetCap, selectedSlotId, assignPlayer } = useStore()
   const [q, setQ] = useState('')
   const [posFilter, setPosFilter] = useState<'ALL' | Position>('ALL')
@@ -168,7 +169,12 @@ export default function SearchPanel() {
               tooPricey={selectedSlot ? p.value > remaining : false}
               clickable={!!selectedSlot}
               blocked={elig === 'amber' && amberAtLimit && lineup[selectedSlot!.id]?.playerId !== p.id}
-              onAssign={() => selectedSlot && assignPlayer(selectedSlot.id, p.id)}
+              draggable={draggable}
+              onAssign={() => {
+                if (!selectedSlot) return
+                assignPlayer(selectedSlot.id, p.id)
+                onAfterAssign?.()
+              }}
             />
           )
         })}

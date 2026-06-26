@@ -13,7 +13,12 @@ import RoleModal from './RoleModal'
 const byId = new Map(PLAYERS.map((p) => [p.id, p]))
 const HEX = 'polygon(50% 1%, 95% 25%, 95% 75%, 50% 99%, 5% 75%, 5% 25%)'
 
-function Slot({ slot, onEditRole }: { slot: FormationSlot; onEditRole: (slotId: string, pos: Position) => void }) {
+function Slot({ slot, onEditRole, compact, draggable }: {
+  slot: FormationSlot
+  onEditRole: (slotId: string, pos: Position) => void
+  compact: boolean
+  draggable: boolean
+}) {
   const { lineup, selectedSlotId, selectSlot, removeFromSlot } = useStore()
   const entry = lineup[slot.id]
   const player = entry ? byId.get(entry.playerId) : undefined
@@ -22,23 +27,24 @@ function Slot({ slot, onEditRole }: { slot: FormationSlot; onEditRole: (slotId: 
   const { setNodeRef: dropRef, isOver } = useDroppable({ id: `slot:${slot.id}` })
   const { setNodeRef: dragRef, listeners, attributes, isDragging } = useDraggable({
     id: `pitch:${slot.id}`,
-    disabled: !player,
+    disabled: !player || !draggable,
   })
+  const dragProps = draggable ? { ...listeners, ...attributes } : {}
 
   const elig = player ? eligibility(player, slot.type) : null
+  const scale = (compact ? 0.7 : 1) * (isOver ? 1.05 : 1)
 
   return (
     <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${slot.x}%`, top: `${slot.y}%` }}>
-      <div ref={dropRef} className={`transition ${isOver ? 'scale-105' : ''}`}>
+      <div ref={dropRef} className="transition" style={{ transform: `scale(${scale})` }}>
         {player && elig ? (
-          <div className={`relative transition ${isDragging ? 'opacity-30' : 'hover:-translate-y-0.5'}`}>
+          <div className={`relative transition ${isDragging ? 'opacity-30' : draggable ? 'hover:-translate-y-0.5' : ''}`}>
             <button
               ref={dragRef}
-              {...listeners}
-              {...attributes}
+              {...dragProps}
               onClick={() => onEditRole(slot.id, slot.type)}
-              className="block cursor-grab active:cursor-grabbing"
-              title="Drag to move · click to set role"
+              className={`block ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
+              title={draggable ? 'Drag to move · click to set role' : 'Tap to set role'}
             >
               <PlayerCard player={player} slotType={slot.type} eligibility={elig} role={entry?.role} focus={entry?.focus} />
             </button>
@@ -79,7 +85,7 @@ function Slot({ slot, onEditRole }: { slot: FormationSlot; onEditRole: (slotId: 
   )
 }
 
-export default function Pitch() {
+export default function Pitch({ compact = false, draggable = true }: { compact?: boolean; draggable?: boolean }) {
   const { formationName, lineup } = useStore()
   const formation = FORMATIONS.find((f) => f.name === formationName)!
   const [roleModal, setRoleModal] = useState<{ slotId: string; pos: Position } | null>(null)
@@ -103,7 +109,13 @@ export default function Pitch() {
       {/* players layer (not clipped, so cards near the edges aren't cut off) */}
       <div className="absolute inset-0">
         {formation.slots.map((slot) => (
-          <Slot key={slot.id} slot={slot} onEditRole={(slotId, pos) => setRoleModal({ slotId, pos })} />
+          <Slot
+            key={slot.id}
+            slot={slot}
+            compact={compact}
+            draggable={draggable}
+            onEditRole={(slotId, pos) => setRoleModal({ slotId, pos })}
+          />
         ))}
       </div>
 
