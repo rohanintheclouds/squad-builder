@@ -1,12 +1,13 @@
-import { useWcStore, byId } from './store'
+import { byId, type Draft } from './engine'
 import { FORMATIONS } from '../../data/formations'
-import { scoreTeam, TIERS } from './scoring'
+import { scoreTeam } from './scoring'
 import { eligibility } from '../../lib/positions'
 import PlayerCard from '../../components/PlayerCard'
 
-export default function ResultView({ onExit }: { onExit: () => void }) {
-  const { pickedIds, lineup, formationName, start } = useWcStore()
-  const { avg, percentile, tier } = scoreTeam(pickedIds)
+export default function ResultView({ draft, onExit }: { draft: Draft; onExit: () => void }) {
+  const { pickedIds, lineup, formationName, start } = draft.useStore()
+  const tiers = draft.config.tiers
+  const { avg, percentile, tier } = scoreTeam(pickedIds, tiers)
   const topPct = Math.max(1, Math.round((1 - percentile) * 100))
   const formation = formationName ? FORMATIONS.find((f) => f.name === formationName)! : null
 
@@ -19,21 +20,17 @@ export default function ResultView({ onExit }: { onExit: () => void }) {
         <div className="mt-1 text-xs text-white/45">Top {topPct}% of all possible teams · squad strength {Math.round(avg)}</div>
       </div>
 
-      {/* tier ladder */}
       <div className="mx-auto mb-8 flex w-full max-w-md flex-col gap-1">
-        {TIERS.map((t) => (
-          <div
-            key={t.key}
+        {tiers.map((t) => (
+          <div key={t.key}
             className={`flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition ${t.key === tier.key ? 'font-bold' : 'opacity-45'}`}
-            style={{ background: t.key === tier.key ? `${t.color}22` : 'transparent', color: t.key === tier.key ? t.color : '#cbd5e1' }}
-          >
+            style={{ background: t.key === tier.key ? `${t.color}22` : 'transparent', color: t.key === tier.key ? t.color : '#cbd5e1' }}>
             <span>{t.label}</span>
             {t.key === tier.key && <span>← you</span>}
           </div>
         ))}
       </div>
 
-      {/* the squad, ratings revealed */}
       <div className="mb-2 text-center text-sm font-semibold text-white/70">Your {formationName} XI</div>
       <div className="mb-6 flex flex-wrap justify-center gap-2">
         {formation?.slots.map((slot) => {

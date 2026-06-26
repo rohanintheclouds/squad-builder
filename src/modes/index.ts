@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import ManagerMode from './manager/ManagerMode'
-import RoadToWorldCup from './roadwc/RoadToWorldCup'
+import RoadToWorldCup from './roadwc'
+import RoadToCL from './roadcl'
 
 export type GameMode = {
   id: string
@@ -28,5 +29,13 @@ export const MODES: GameMode[] = [
     emoji: '🏆',
     accent: '#fbbf24',
     Component: RoadToWorldCup,
+  },
+  {
+    id: 'roadcl',
+    name: 'Road to the Champions League',
+    tagline: 'A random elite club is drawn each pick. Build a blind XI and chase the European crown.',
+    emoji: '⭐',
+    accent: '#818cf8',
+    Component: RoadToCL,
   },
 ]

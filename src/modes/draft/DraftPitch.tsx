@@ -1,4 +1,4 @@
-import { useWcStore, byId, validSlotsFor } from './store'
+import { byId, validSlotsFor, type Draft } from './engine'
 import { FORMATIONS } from '../../data/formations'
 import { eligibility } from '../../lib/positions'
 import PitchMarkings from '../../components/PitchMarkings'
@@ -6,13 +6,13 @@ import PlayerCard from '../../components/PlayerCard'
 
 const HEX = 'polygon(50% 1%, 95% 25%, 95% 75%, 50% 99%, 5% 75%, 5% 25%)'
 
-export default function WcPitch({ compact = false }: { compact?: boolean }) {
-  const { formationName, lineup, selectedPlayerId, selectedSlotId, selectSlot, place } = useWcStore()
+export default function DraftPitch({ draft, compact = false }: { draft: Draft; compact?: boolean }) {
+  const { formationName, lineup, selectedPlayerId, selectedSlotId, selectSlot, place } = draft.useStore()
   if (!formationName) return null
   const formation = FORMATIONS.find((f) => f.name === formationName)!
   const selected = selectedPlayerId ? byId.get(selectedPlayerId) : undefined
   const validSlots = selected ? new Set(validSlotsFor(selected, lineup, formationName)) : new Set<string>()
-  const scale = compact ? 0.8 : 1
+  const scale = compact ? 0.72 : 1
 
   return (
     <div className="relative h-full w-full rounded-2xl ring-1 ring-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
@@ -26,7 +26,7 @@ export default function WcPitch({ compact = false }: { compact?: boolean }) {
         {formation.slots.map((slot) => {
           const pid = lineup[slot.id]
           const player = pid ? byId.get(pid) : undefined
-          const isPlaceTarget = selected ? validSlots.has(slot.id) : false // a player is picked and can go here
+          const isPlaceTarget = selected ? validSlots.has(slot.id) : false
           const isSelectedSlot = selectedSlotId === slot.id
           const highlight = isPlaceTarget || isSelectedSlot
           return (
@@ -42,14 +42,10 @@ export default function WcPitch({ compact = false }: { compact?: boolean }) {
                     }}
                     className="group relative flex h-[88px] w-[78px] cursor-pointer items-center justify-center"
                   >
-                    <span
-                      className={`absolute inset-0 transition ${highlight ? 'animate-pulse' : 'opacity-80 group-hover:opacity-100'}`}
-                      style={{ clipPath: HEX, background: highlight ? '#22d3ee' : 'rgba(52,211,153,0.5)' }}
-                    />
-                    <span
-                      className="absolute inset-[2px] flex items-center justify-center"
-                      style={{ clipPath: HEX, background: 'linear-gradient(160deg, rgba(20,28,38,0.95), rgba(10,15,21,0.95))' }}
-                    >
+                    <span className={`absolute inset-0 transition ${highlight ? 'animate-pulse' : 'opacity-80 group-hover:opacity-100'}`}
+                      style={{ clipPath: HEX, background: highlight ? '#22d3ee' : 'rgba(52,211,153,0.5)' }} />
+                    <span className="absolute inset-[2px] flex items-center justify-center"
+                      style={{ clipPath: HEX, background: 'linear-gradient(160deg, rgba(20,28,38,0.95), rgba(10,15,21,0.95))' }}>
                       <span className={`text-lg font-light ${highlight ? 'text-cyan-300' : 'text-emerald-300/80'}`}>{isPlaceTarget ? '↓' : '+'}</span>
                     </span>
                     <span className="absolute -bottom-1.5 rounded px-1.5 text-[10px] font-bold tracking-wide text-white/90"

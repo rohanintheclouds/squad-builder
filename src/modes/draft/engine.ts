@@ -1,0 +1,179 @@
+import { create, type StoreApi, type UseBoundStore } from 'zustand'
+import { FORMATIONS } from '../../data/formations'
+import { PLAYERS } from '../../data/players'
+import { eligibility } from '../../lib/positions'
+import type { Player, Position } from '../../types'
+import type { Tier } from './scoring'
+
+// Generic draft engine shared by Road to the World Cup (group = nation) and
+// Road to the Champions League (group = club). A "group" is whatever you draft from.
+
+export const AMBER_LIMIT = 3
+export const REROLLS = 2
+const FORMATION_CHOICES = 5
+/** When the pool can't fill a slot, you may draft any free agent under this value (€M). */
+export const EMERGENCY_MAX = 40
+export const byId = new Map(PLAYERS.map((p) => [p.id, p]))
+
+function slots(formationName: string) {
+  return FORMATIONS.find((f) => f.name === formationName)?.slots ?? []
+}
+
+function amberCount(lineup: Record<string, string>, formationName: string): number {
+  const types = new Map(slots(formationName).map((s) => [s.id, s.type]))
+  let n = 0
+  for (const [slotId, pid] of Object.entries(lineup)) {
+    const p = byId.get(pid)
+    const t = types.get(slotId)
+    if (p && t && eligibility(p, t) === 'amber') n++
+  }
+  return n
+}
+
+/** Slots a player can be legally placed into right now (green always; amber only under the cap). */
+export function validSlotsFor(player: Player, lineup: Record<string, string>, formationName: string): string[] {
+  const amberOk = amberCount(lineup, formationName) < AMBER_LIMIT
+  return slots(formationName)
+    .filter((s) => !lineup[s.id])
+    .filter((s) => {
+      const e = eligibility(player, s.type as Position)
+      return e === 'green' || (e === 'amber' && amberOk)
+    })
+    .map((s) => s.id)
+}
+
+/** Free agents (any club/nation) under EMERGENCY_MAX that can fill an open slot right now. */
+export function emergencyPlayers(lineup: Record<string, string>, pickedIds: string[], formationName: string): Player[] {
+  const picked = new Set(pickedIds)
+  return PLAYERS
+    .filter((p) => p.value != null && p.value < EMERGENCY_MAX && !picked.has(p.id) && validSlotsFor(p, lineup, formationName).length > 0)
+    .sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+type Phase = 'formation' | 'draft' | 'result'
+
+export type DraftState = {
+  phase: Phase
+  formationChoices: string[]
+  formationName: string | null
+  lineup: Record<string, string>
+  pickedIds: string[]
+  group: string | null
+  /** True when no pooled group can fill a remaining slot: draft any free agent under €40M. */
+  emergency: boolean
+  rerollsLeft: number
+  selectedPlayerId: string | null
+  selectedSlotId: string | null
+
+  start: () => void
+  chooseFormation: (name: string) => void
+  selectPlayer: (id: string | null) => void
+  selectSlot: (slotId: string | null) => void
+  place: (playerId: string, slotId: string) => void
+  reroll: () => void
+}
+
+export type DraftConfig = {
+  id: string
+  kind: 'nation' | 'club'
+  noun: string // singular label, e.g. 'nation' / 'club'
+  groupOf: (p: Player) => string
+  pool: string[] // group names eligible to be drawn
+  tiers: Tier[]
+}
+
+export type Draft = {
+  config: DraftConfig
+  useStore: UseBoundStore<StoreApi<DraftState>>
+  availableForGroup: (group: string, pickedIds: string[]) => Player[]
+  pool: string[]
+}
+
+export function createDraft(config: DraftConfig): Draft {
+  const byGroup: Record<string, Player[]> = {}
+  for (const p of PLAYERS) (byGroup[config.groupOf(p)] ??= []).push(p)
+  const pool = config.pool.filter((g) => (byGroup[g]?.length ?? 0) > 0)
+
+  const availableForGroup = (group: string, pickedIds: string[]) => {
+    const picked = new Set(pickedIds)
+    return (byGroup[group] ?? []).filter((p) => !picked.has(p.id))
+  }
+  const groupUsable = (group: string, lineup: Record<string, string>, pickedIds: string[], fn: string) =>
+    availableForGroup(group, pickedIds).some((p) => validSlotsFor(p, lineup, fn).length > 0)
+
+  // Auto-mulligan: keep drawing ONLY from the approved pool, skipping any group that has no
+  // placeable player right now (re-randomize). The same group can come up again; only its
+  // already-picked players are unavailable. Never draws from outside the pool.
+  const pickGroup = (lineup: Record<string, string>, pickedIds: string[], fn: string): string | null => {
+    const usable = pool.filter((g) => groupUsable(g, lineup, pickedIds, fn))
+    if (!usable.length) return null
+    return usable[Math.floor(Math.random() * usable.length)]
+  }
+
+  const freshChoices = () => shuffle(FORMATIONS.map((f) => f.name)).slice(0, FORMATION_CHOICES)
+
+  const useStore = create<DraftState>((set, get) => ({
+    phase: 'formation',
+    formationChoices: freshChoices(),
+    formationName: null,
+    lineup: {},
+    pickedIds: [],
+    group: null,
+    emergency: false,
+    rerollsLeft: REROLLS,
+    selectedPlayerId: null,
+    selectedSlotId: null,
+
+    start: () =>
+      set({
+        phase: 'formation', formationChoices: freshChoices(), formationName: null,
+        lineup: {}, pickedIds: [], group: null, emergency: false, rerollsLeft: REROLLS, selectedPlayerId: null, selectedSlotId: null,
+      }),
+
+    chooseFormation: (name) =>
+      set({ formationName: name, phase: 'draft', group: pickGroup({}, [], name), emergency: false, rerollsLeft: REROLLS, selectedPlayerId: null, selectedSlotId: null }),
+
+    selectPlayer: (id) => set({ selectedPlayerId: id, selectedSlotId: null }),
+    selectSlot: (slotId) => set({ selectedSlotId: slotId, selectedPlayerId: null }),
+
+    place: (playerId, slotId) => {
+      const { lineup, formationName, pickedIds } = get()
+      if (!formationName) return
+      const player = byId.get(playerId)
+      if (!player || !validSlotsFor(player, lineup, formationName).includes(slotId)) return
+      const nextLineup = { ...lineup, [slotId]: playerId }
+      const nextPicked = [...pickedIds, playerId]
+      if (Object.keys(nextLineup).length >= slots(formationName).length) {
+        set({ lineup: nextLineup, pickedIds: nextPicked, selectedPlayerId: null, selectedSlotId: null, group: null, emergency: false, phase: 'result' })
+        return
+      }
+      // If no pooled group can fill a remaining slot, drop into emergency (free-agent) mode
+      // instead of getting stuck or drawing from outside the pool.
+      const next = pickGroup(nextLineup, nextPicked, formationName)
+      set({
+        lineup: nextLineup, pickedIds: nextPicked, selectedPlayerId: null, selectedSlotId: null,
+        group: next, emergency: next === null,
+      })
+    },
+
+    // Manual reroll: skip the current group for a different usable one (2 per game).
+    reroll: () => {
+      const { rerollsLeft, group, emergency, lineup, pickedIds, formationName } = get()
+      if (rerollsLeft <= 0 || emergency || !group || !formationName) return
+      const others = pool.filter((g) => g !== group && groupUsable(g, lineup, pickedIds, formationName))
+      if (!others.length) return // nothing else to roll to
+      set({ rerollsLeft: rerollsLeft - 1, group: others[Math.floor(Math.random() * others.length)], selectedPlayerId: null, selectedSlotId: null })
+    },
+  }))
+
+  return { config, useStore, availableForGroup, pool }
+}

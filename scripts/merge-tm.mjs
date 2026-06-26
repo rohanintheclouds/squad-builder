@@ -76,7 +76,8 @@ for (const [, name, ageRaw, natRaw, posRaw, clubRaw, valRaw] of rows) {
   } else {
     const nationality = NAT_NORM[natRaw] ?? natRaw
     const [club, league] = shortClub(clubRaw)
-    const player = { name, nationality, club, league, value, positions: POS_EXT[pos] ?? [pos], age: age >= 15 && age <= 45 ? age : 25 }
+    // primary position only; real secondary positions are curated by hand (see DATA.md)
+    const player = { name, nationality, club, league, value, positions: [pos], age: age >= 15 && age <= 45 ? age : 25 }
     players.push(player)
     byName.set(name, player)
     added++
