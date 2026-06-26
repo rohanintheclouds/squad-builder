@@ -105,6 +105,10 @@ export default function GuessThePlayer({ onExit }: { onExit: () => void }) {
 
   return (
     <div className="mx-auto flex h-full max-w-4xl flex-col px-3 py-4">
+      {/* what-to-do callout */}
+      <div className="mb-2.5 rounded-lg border border-blue-400/25 bg-blue-500/10 px-3 py-1.5 text-center text-xs text-blue-100/80 sm:text-sm">
+        🤔 A mystery {difficulty === 'casual' ? 'top-150 ' : ''}player is locked in — guess who in {MAX_GUESSES} tries. Each guess reveals how close you are.
+      </div>
       {/* header */}
       <div className="mb-3 flex items-center gap-2">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/20 text-lg font-black text-blue-300">?</span>
