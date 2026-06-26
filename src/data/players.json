@@ -36,7 +36,7 @@
 {"name":"Enzo Fernández","nationality":"Argentina","club":"Chelsea","league":"Premier League","value":90,"positions":["CM"],"age":25},
 {"name":"Rayan Cherki","nationality":"France","club":"Man City","league":"Premier League","value":90,"positions":["CAM","RW","LW"],"age":22},
 {"name":"Morgan Rogers","nationality":"England","club":"Aston Villa","league":"Premier League","value":90,"positions":["CAM"],"age":25},
-{"name":"Federico Valverde","nationality":"Uruguay","club":"Real Madrid","league":"La Liga","value":90,"positions":["CM","RM","CDM"],"age":27},
+{"name":"Federico Valverde","nationality":"Uruguay","club":"Real Madrid","league":"La Liga","value":90,"positions":["CM","RM","CDM","RB"],"age":27},
 {"name":"Lautaro Martínez","nationality":"Argentina","club":"Inter","league":"Serie A","value":85,"positions":["ST"],"age":28},
 {"name":"Alexander Isak","nationality":"Sweden","club":"Liverpool","league":"Premier League","value":85,"positions":["ST"],"age":25},
 {"name":"Estêvão","nationality":"Brazil","club":"Chelsea","league":"Premier League","value":80,"positions":["RW","LW"],"age":18},

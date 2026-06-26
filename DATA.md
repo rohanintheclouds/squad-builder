@@ -18,13 +18,23 @@ A player record:
 
 ## Ratings (`src/data/ratings.ts`)
 
-The hidden rating (World Cup scoring only, never shown) is **curated + formula**:
-- `OVERRIDES` — hand-set FC-style ratings for players we can rate confidently. Edit freely
-  (`'Lamine Yamal': 92`). Keys must match `name` exactly.
-- `formulaRating(value, league)` — fallback for everyone else (market value + league tier).
+The hidden rating (draft scoring only, never shown during play) reflects **current form + ability**,
+NOT market value. Methodology (follow this whenever ratings are refreshed):
 
-To tune skill, edit `OVERRIDES`. To re-balance the World Cup tier curve, adjust `MEAN` / `TEAM_SD`
-in `src/modes/roadwc/scoring.ts` (calibrated by Monte-Carlo; see the comment there).
+1. **SofaScore season rating = primary signal** (form/consistency this season). Pull from
+   sofascore.com — their `/news/` rating round-ups are fetchable (e.g. "Team of the Season",
+   "top-rated players", "rating race by league"). ~6.8 = solid starter, ~7.5 = excellent, ~7.9+ = elite.
+2. **EA FC26 overall = ability anchor.** Blend ~55% SofaScore form / 45% FC26 so one hot season
+   doesn't overrate a limited player, and a quiet season pulls a great player down.
+3. **Market value is de-emphasised** — only `formulaRating` (the fallback) uses it, capped at 83.
+
+Edit `OVERRIDES` in `ratings.ts` (keys = `name` exactly). Card tiers (90+ purple, 80+ gold, 70+
+silver) and draft scoring both read this rating.
+
+**To "update the ratings" (monthly):** re-pull SofaScore rating round-ups + cross-check FC26,
+revise `OVERRIDES` per the blend above, then **recalibrate** the bell curve: run a Monte-Carlo of
+drafts to get the casual/expert average-rating, and set `MEAN` / `TEAM_SD` in
+`src/modes/draft/scoring.ts` (MEAN ≈ casual mean; SD so expert lands Quarter/Semi). Then build + QA + push.
 
 ## Monthly refresh (one prompt)
 

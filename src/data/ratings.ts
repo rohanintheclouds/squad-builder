@@ -1,52 +1,56 @@
-// Hidden player rating (0-99) used by World Cup scoring. NEVER shown during play.
+// Hidden player rating (0-99) used by draft scoring. NEVER shown during play.
 //
-// Two layers, blended by confidence:
-//  1. OVERRIDES  — hand-set, FC26-informed ratings for players I can rate confidently
-//                  (stars, legends, and players whose market value misrepresents ability).
-//                  Edit these freely to tune skill ("make Yamal 92").
-//  2. formula    — for everyone else, derived from market value + league tier. As confidence
-//                  drops (lower-profile players), the formula does more of the work.
-//
-// Keys must match the player's `name` in players.json exactly.
+// RATING METHODOLOGY (this is the logic to follow whenever ratings are refreshed):
+//   1. SofaScore season rating is the PRIMARY signal (current form / consistency this season).
+//      Pull from sofascore.com (their /news/ rating round-ups are fetchable). ~6.8 = solid
+//      starter, ~7.5 = excellent season, ~7.9+ = elite season.
+//   2. EA FC26 overall is the ABILITY anchor (blend ~ 55% SofaScore form / 45% FC26 ability),
+//      so a single hot season doesn't overrate a limited player, and a quiet season for a great
+//      player pulls them down (e.g. Wirtz/Lautaro down; Rice ≥ Rodri this season).
+//   3. Market value is DE-EMPHASISED — only the formula fallback below uses it, capped low, so a
+//      pricey but unproven player isn't auto-rated highly.
+//   Edit OVERRIDES freely; keys must match players.json `name` exactly.
 
 export const OVERRIDES: Record<string, number> = {
-  // --- 90+ ---
-  'Erling Haaland': 91, 'Kylian Mbappé': 91, 'Rodri': 91, 'Vinícius Júnior': 90,
-  'Jude Bellingham': 90, 'Harry Kane': 90, 'Lamine Yamal': 90, 'Pedri': 89,
-  // --- 88-89 ---
-  'Bukayo Saka': 89, 'Florian Wirtz': 89, 'Jamal Musiala': 89, 'Declan Rice': 89,
-  'Alisson': 89, 'William Saliba': 88, 'Rúben Dias': 88, 'Thibaut Courtois': 88,
-  'Vitinha': 88, 'Martin Ødegaard': 88, 'Lautaro Martínez': 89, 'Phil Foden': 88,
-  'Mike Maignan': 87, 'Gianluigi Donnarumma': 88, 'Achraf Hakimi': 88, 'Virgil van Dijk': 88,
-  // --- 86-87 ---
-  'Cole Palmer': 87, 'Ousmane Dembélé': 88, 'Federico Valverde': 88, 'Bruno Guimarães': 86,
-  'Alexis Mac Allister': 86, 'Moisés Caicedo': 87, 'Nico Williams': 86, 'Raphinha': 87,
-  'Khvicha Kvaratskhelia': 87, 'Alexander Isak': 87, 'Viktor Gyökeres': 86, 'Julián Álvarez': 87,
-  'Aurélien Tchouaméni': 86, 'Joško Gvardiol': 86, 'Dayot Upamecano': 86, 'Alessandro Bastoni': 87,
-  'Enzo Fernández': 85, 'Dominik Szoboszlai': 85, 'Cristian Romero': 87, 'Marquinhos': 87,
-  'Ederson': 85, 'André Onana': 84, 'Emiliano Martínez': 86, 'David Raya': 87,
-  'Mohamed Salah': 88, 'Kevin De Bruyne': 86, 'Antoine Griezmann': 85,
-  // --- legends / veterans (value understates them) ---
-  'Lionel Messi': 88, 'Cristiano Ronaldo': 86, 'Luka Modrić': 85, 'Manuel Neuer': 86,
-  'Thomas Müller': 83, 'Karim Benzema': 86, 'Sergio Ramos': 82,
-  'Robert Lewandowski': 88, 'Neymar': 84, 'Sadio Mané': 83, 'Riyad Mahrez': 83, 'Marco Reus': 80,
-  // --- strong regulars ---
-  'Jonathan Tah': 84, 'Matthijs de Ligt': 85, 'Lisandro Martínez': 84, 'Ibrahima Konaté': 85,
-  'Gabriel Magalhães': 87, 'Marc Cucurella': 84, 'Nicolò Barella': 87, 'Federico Dimarco': 85,
-  'Scott McTominay': 85, 'Rúben Neves': 84, 'Manuel Locatelli': 83, 'Youri Tielemans': 83,
-  'Denzel Dumfries': 84, 'Ollie Watkins': 85, 'Richarlison': 82, 'Christopher Nkunku': 84,
-  'Mikel Oyarzabal': 85, 'Mikel Merino': 84, 'Joelinton': 83, 'Manuel Ugarte': 82,
-  'Victor Osimhen': 88, 'Rasmus Højlund': 82, 'Kai Havertz': 84,
-  'Dominic Solanke': 82, 'Eberechi Eze': 84, 'Anthony Gordon': 84, 'Morgan Gibbs-White': 84,
-  'Cody Gakpo': 84, 'Luis Díaz': 86, 'Pedro Neto': 83, 'Jérémy Doku': 84,
-  'Bryan Mbeumo': 85, 'Matheus Cunha': 84, 'Trent Alexander-Arnold': 86, 'Jules Koundé': 85,
-  'Reece James': 84, 'Nuno Mendes': 86, 'Frenkie de Jong': 87,
-  'Gavi': 84, 'Pau Cubarsí': 84, 'Dean Huijsen': 83, 'Micky van de Ven': 84,
-  'Marc Guéhi': 84, 'Levi Colwill': 83, 'Mohammed Kudus': 83,
-  'Rafael Leão': 86, 'Sandro Tonali': 85, 'Tijjani Reijnders': 84, 'Ryan Gravenberch': 84,
-  'Martín Zubimendi': 85, 'Diogo Dalot': 83, 'Pape Matar Sarr': 81, 'Eduardo Camavinga': 85,
-  'Arda Güler': 84, 'Nico Paz': 83, 'Amadou Onana': 82,
-  'Ademola Lookman': 84, 'Marcus Rashford': 84, 'Christian Pulisic': 84, 'Weston McKennie': 80,
+  // --- Elite (89-91) ---
+  'Kylian Mbappé': 92, 'Lamine Yamal': 92, 'Erling Haaland': 91, 'Harry Kane': 90,
+  'Michael Olise': 90, 'Vinícius Júnior': 89, 'Jude Bellingham': 89,
+  // --- Top (86-88) ---
+  'Mohamed Salah': 87, 'Bukayo Saka': 88, 'Declan Rice': 88, 'Ousmane Dembélé': 88,
+  'Gianluigi Donnarumma': 88, 'Alisson': 86, 'Dominik Szoboszlai': 87, 'Pedri': 87,
+  'Vitinha': 87, 'Jamal Musiala': 87, 'Rúben Dias': 87, 'William Saliba': 87,
+  'Virgil van Dijk': 87, 'Thibaut Courtois': 87, 'Federico Valverde': 87, 'Raphinha': 87,
+  'Achraf Hakimi': 87, 'Lionel Messi': 87, 'Rodri': 86, 'Cole Palmer': 86, 'Phil Foden': 86,
+  'Khvicha Kvaratskhelia': 86, 'Martin Ødegaard': 86, 'Frenkie de Jong': 86, 'Alexander Isak': 86,
+  'Julián Álvarez': 86, 'Bruno Fernandes': 86, 'Gabriel Magalhães': 86, 'Sandro Tonali': 86,
+  'Nuno Mendes': 86, 'Mike Maignan': 86, 'David Raya': 86, 'Robert Lewandowski': 86, 'Ederson': 84,
+  // --- Very good (84-85) ---
+  'Lautaro Martínez': 85, 'Florian Wirtz': 85, 'Viktor Gyökeres': 85, 'Nico Williams': 85,
+  'Bruno Guimarães': 85, 'Alessandro Bastoni': 85, 'Marquinhos': 85, 'Joško Gvardiol': 85,
+  'Dayot Upamecano': 85, 'Cristian Romero': 85, 'Trent Alexander-Arnold': 85, 'Rafael Leão': 85,
+  'Pedro Neto': 85, 'Antoine Griezmann': 85, 'Omar Marmoush': 85, 'Gabriel Martinelli': 85,
+  'Theo Hernández': 84, 'Emiliano Martínez': 85, 'Kevin De Bruyne': 85, 'Manuel Neuer': 85,
+  'João Neves': 85, 'Aurélien Tchouaméni': 84, 'Jérémy Doku': 84, 'Cody Gakpo': 84,
+  'Eberechi Eze': 84, 'Anthony Gordon': 84, 'Jules Koundé': 84, 'Arda Güler': 84,
+  'Pau Cubarsí': 84, 'Micky van de Ven': 84, 'Marc Guéhi': 84, 'Manuel Locatelli': 84,
+  'Luka Modrić': 84, 'Nico Schlotterbeck': 84, 'Désiré Doué': 84, 'Fermín López': 84,
+  'Kenan Yıldız': 84, 'Alexis Mac Allister': 85, 'Tijjani Reijnders': 84, 'Gonçalo Ramos': 84,
+  'Karim Benzema': 84, 'Mateo Retegui': 84,
+  // --- Good (82-83) ---
+  'Reece James': 83, 'Levi Colwill': 83, 'Dean Huijsen': 83, 'Yan Diomande': 83, 'Estêvão': 83,
+  'Hugo Ekitiké': 83, 'João Pedro': 83, 'Matheus Cunha': 83, 'Benjamin Šeško': 83,
+  'Warren Zaïre-Emery': 83, 'Aleksandar Pavlović': 83, 'Morgan Gibbs-White': 83, 'Mohammed Kudus': 83,
+  'Guglielmo Vicario': 83, 'Unai Simón': 84, 'Rúben Neves': 83, 'Scott McTominay': 84,
+  'Mikel Oyarzabal': 84, 'Mikel Merino': 83, 'Matthijs de Ligt': 84, 'Lisandro Martínez': 83,
+  'Jonathan Tah': 83, 'Ibrahima Konaté': 84, 'Nicolò Barella': 85, 'Federico Dimarco': 84,
+  'Antoine Semenyo': 83, 'Morgan Rogers': 82, 'Elliot Anderson': 82, 'Marcus Rashford': 82,
+  'Christopher Nkunku': 82, 'Riyad Mahrez': 82, 'Neymar': 82, 'Richarlison': 81,
+  'Giorgi Mamardashvili': 82, 'André Onana': 81, 'Denzel Dumfries': 83, 'Ollie Watkins': 84,
+  'Rasmus Højlund': 81, 'Joelinton': 82, 'Youri Tielemans': 82, 'Diogo Dalot': 82,
+  'Sadio Mané': 81, 'Sergio Ramos': 80, 'Thomas Müller': 81, 'Marco Reus': 79,
+  'Pape Matar Sarr': 81, 'Eduardo Camavinga': 84, 'Nico Paz': 83, 'Gavi': 83,
+  'Lennart Karl': 82, 'Franco Mastantuono': 82, 'Rayan Cherki': 84, 'Kai Havertz': 83,
+  'Dominic Solanke': 82, 'Luis Díaz': 85,
 }
 
 const LEAGUE_ADJ: Record<string, number> = {
@@ -55,11 +59,12 @@ const LEAGUE_ADJ: Record<string, number> = {
   'Saudi Pro League': -1, 'Russian PL': -1, 'Super League': -2, SuperLiga: -2, Segunda: -3, Other: -2,
 }
 
-/** Formula rating for players without a curated override. */
+// Fallback ONLY: value-derived and intentionally conservative (value is de-emphasised) so an
+// uncurated, pricey-but-unproven player tops out modestly. Curate notable players above instead.
 export function formulaRating(value: number | null, league: string): number {
-  if (value == null) return 78
+  if (value == null) return 76
   const adj = LEAGUE_ADJ[league] ?? -1
-  return Math.max(70, Math.min(90, Math.round(49.96 + 20.6 * Math.log10(Math.max(1, value)) + adj)))
+  return Math.max(70, Math.min(83, Math.round(58 + 11 * Math.log10(Math.max(1, value)) + adj)))
 }
 
 export function ratingFor(name: string, value: number | null, league: string): number {
@@ -68,7 +73,7 @@ export function ratingFor(name: string, value: number | null, league: string): n
 
 /**
  * Future outlook from current ability + age: young players gain upside, veterans decline.
- * Used by Squad Builder's team rating, NOT by World Cup scoring (which judges current ability).
+ * Used by Squad Builder's team rating, NOT by draft scoring (which judges current ability).
  */
 export function potentialFor(current: number, age: number): number {
   const growth = age <= 23 ? Math.min(8, Math.round((23 - age) * 1.5)) : 0

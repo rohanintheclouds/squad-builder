@@ -1,10 +1,10 @@
 import { PLAYERS } from '../../data/players'
 
 // Draft scoring uses each player's hidden rating (see src/data/ratings.ts).
-// Calibrated by Monte-Carlo: casual play averages ~82 rating, expert ~84.4. Centering the
-// curve here puts an average team mid-table and makes the top tier genuinely rare.
-const MEAN = 82.5
-const TEAM_SD = 2.0
+// Calibrated by Monte-Carlo to the current ratings: casual play averages ~76.7, expert ~79.7.
+// Centering here puts an average team at Round of 16 and makes the top tier genuinely rare.
+const MEAN = 77
+const TEAM_SD = 2.8
 
 const byId = new Map(PLAYERS.map((p) => [p.id, p]))
 
@@ -19,8 +19,8 @@ function normalCdf(z: number): number {
 export type Tier = { key: string; label: string; blurb: string; color: string; minPercentile: number }
 
 export const WC_TIERS: Tier[] = [
-  { key: 'winner', label: 'World Cup Winner', blurb: 'Top 3% of all possible teams. Legendary.', color: '#fbbf24', minPercentile: 0.97 },
-  { key: 'final', label: 'Finalist', blurb: 'So close to glory. A truly elite squad.', color: '#e5e7eb', minPercentile: 0.92 },
+  { key: 'winner', label: 'World Cup Winner', blurb: 'Top ~2% of all teams. Legendary.', color: '#fbbf24', minPercentile: 0.988 },
+  { key: 'final', label: 'Finalist', blurb: 'So close to glory. A truly elite squad.', color: '#e5e7eb', minPercentile: 0.95 },
   { key: 'semi', label: 'Semi-Finalist', blurb: 'Among the very best in the world.', color: '#a78bfa', minPercentile: 0.85 },
   { key: 'quarter', label: 'Quarter-Finalist', blurb: 'A strong, well-balanced side.', color: '#38bdf8', minPercentile: 0.62 },
   { key: 'r16', label: 'Round of 16', blurb: 'Solid knockout-round material.', color: '#34d399', minPercentile: 0.38 },
@@ -30,8 +30,8 @@ export const WC_TIERS: Tier[] = [
 ]
 
 export const CL_TIERS: Tier[] = [
-  { key: 'winner', label: 'Champions League Winner', blurb: 'Top 3% of all possible squads. Kings of Europe.', color: '#fbbf24', minPercentile: 0.97 },
-  { key: 'final', label: 'Finalist', blurb: 'One night from the trophy.', color: '#e5e7eb', minPercentile: 0.92 },
+  { key: 'winner', label: 'Champions League Winner', blurb: 'Top ~2% of all squads. Kings of Europe.', color: '#fbbf24', minPercentile: 0.988 },
+  { key: 'final', label: 'Finalist', blurb: 'One night from the trophy.', color: '#e5e7eb', minPercentile: 0.95 },
   { key: 'semi', label: 'Semi-Finalist', blurb: 'Among Europe’s elite four.', color: '#a78bfa', minPercentile: 0.85 },
   { key: 'quarter', label: 'Quarter-Finalist', blurb: 'A genuine European heavyweight.', color: '#38bdf8', minPercentile: 0.62 },
   { key: 'r16', label: 'Round of 16', blurb: 'Through to the knockouts.', color: '#34d399', minPercentile: 0.38 },
