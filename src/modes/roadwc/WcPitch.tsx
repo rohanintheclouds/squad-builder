@@ -12,7 +12,7 @@ export default function WcPitch({ compact = false }: { compact?: boolean }) {
   const formation = FORMATIONS.find((f) => f.name === formationName)!
   const selected = selectedPlayerId ? byId.get(selectedPlayerId) : undefined
   const validSlots = selected ? new Set(validSlotsFor(selected, lineup, formationName)) : new Set<string>()
-  const scale = compact ? 0.7 : 1
+  const scale = compact ? 0.64 : 1
 
   return (
     <div className="relative h-full w-full rounded-2xl ring-1 ring-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">

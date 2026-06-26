@@ -18,14 +18,16 @@ export default function RoadToWorldCup({ onExit }: { onExit: () => void }) {
 
   // draft
   if (isMobile) {
+    // Split the screen: pitch fills the top (sized to fit, fully visible), the nation
+    // panel gets a guaranteed bottom slice so the player list is always usable.
     return (
       <div className="flex h-full flex-col">
-        <div className="px-3 pt-3">
-          <div className="mx-auto w-full max-w-[520px]" style={{ aspectRatio: '80 / 105' }}>
+        <div className="flex min-h-0 flex-1 items-center justify-center p-2">
+          <div className="h-full" style={{ aspectRatio: '80 / 105' }}>
             <WcPitch compact />
           </div>
         </div>
-        <div className="mt-2 min-h-0 flex-1 border-t border-white/10">
+        <div className="h-[50vh] shrink-0 border-t border-white/10">
           <NationPanel />
         </div>
       </div>
