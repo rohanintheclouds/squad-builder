@@ -5,7 +5,11 @@ import { flag } from '../../lib/flags'
 import { fmtValue } from '../../lib/format'
 import type { Position } from '../../types'
 
-export default function NationPanel() {
+export default function NationPanel({ onPick, expanded, onToggleExpand }: {
+  onPick?: () => void
+  expanded?: boolean
+  onToggleExpand?: () => void
+} = {}) {
   const {
     nation, lineup, pickedIds, formationName, selectedPlayerId, selectedSlotId,
     selectPlayer, selectSlot, place, reroll, rerollsLeft,
@@ -61,6 +65,15 @@ export default function NationPanel() {
 
   return (
     <div className="glass flex h-full flex-col">
+      {onToggleExpand && (
+        <button
+          onClick={onToggleExpand}
+          className="flex w-full shrink-0 items-center justify-center gap-2 border-b border-white/10 py-1.5 text-xs font-semibold text-white/60 active:bg-white/5"
+        >
+          <span className="h-1 w-10 rounded-full bg-white/25" />
+          <span>{expanded ? 'Show pitch ▼' : 'Bigger player list ▲'}</span>
+        </button>
+      )}
       <div className="border-b border-white/10 p-2.5">
         <div className="mb-1.5 flex items-center justify-between text-xs">
           <span className="font-bold tracking-wide text-white/90">PICK {Math.min(filled + 1, total)} / {total}</span>
@@ -143,8 +156,10 @@ export default function NationPanel() {
                 onClick={() => {
                   if (selectedSlotId && formationName && validSlotsFor(p, lineup, formationName).includes(selectedSlotId)) {
                     place(p.id, selectedSlotId)
+                    onPick?.()
                   } else {
                     selectPlayer(sel ? null : p.id)
+                    if (!sel) onPick?.()
                   }
                 }}
                 className={`flex w-full items-center gap-2.5 border-b border-white/5 px-3 py-2 text-left transition
