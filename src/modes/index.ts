@@ -41,7 +41,7 @@ export const MODES: GameMode[] = [
   },
   {
     id: 'guess',
-    name: 'Guess the Player',
+    name: 'Do You Know Ball',
     tagline: 'Six guesses to find the mystery player. Each guess reveals club, nation, position, age, height and value clues.',
     emoji: '🔍',
     accent: '#22d3ee',
