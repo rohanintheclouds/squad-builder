@@ -77,7 +77,7 @@ const DEFS: Def[] = [
   { name: '5-2-1-2', group: '5-Back', lines: [['LWB', 'CB', 'CB', 'CB', 'RWB'], ['CM', 'CM'], ['CAM'], ['ST', 'ST']] },
   { name: '5-2-3', group: '5-Back', lines: [['LWB', 'CB', 'CB', 'CB', 'RWB'], ['CM', 'CM'], ['LW', 'ST', 'RW']] },
   { name: '5-3-2', group: '5-Back', lines: [['LWB', 'CB', 'CB', 'CB', 'RWB'], ['CM', 'CM', 'CM'], ['ST', 'ST']] },
-  { name: '5-3-2 Holding', group: '5-Back', lines: [['LWB', 'CB', 'CB', 'CB', 'RWB'], ['CDM', 'CM', 'CM'], ['ST', 'ST']] },
+  { name: '5-3-2 Holding', group: '5-Back', lines: [['LWB', 'CB', 'CB', 'CB', 'RWB'], ['CM', 'CDM', 'CM'], ['ST', 'ST']] },
   { name: '5-4-1', group: '5-Back', lines: [['LWB', 'CB', 'CB', 'CB', 'RWB'], ['LM', 'CM', 'CM', 'RM'], ['ST']] },
 ]
 

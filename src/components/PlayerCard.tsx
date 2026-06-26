@@ -16,6 +16,7 @@ export default function PlayerCard({
   role,
   focus,
   dimmed,
+  hideRating,
 }: {
   player: Player
   slotType: Position
@@ -23,8 +24,11 @@ export default function PlayerCard({
   role?: string
   focus?: string
   dimmed?: boolean
+  /** World Cup mode: hide the underlying rating, lead with market value instead. */
+  hideRating?: boolean
 }) {
-  const t = tier(player.rating)
+  // When the rating is hidden we still want gold/silver tiers to feel varied, so tint by value.
+  const t = tier(hideRating ? Math.min(94, 78 + player.value / 8) : player.rating)
   const last = player.name.split(' ').slice(-1)[0]
   return (
     <div
@@ -40,7 +44,14 @@ export default function PlayerCard({
 
         <div className="relative flex items-start justify-between">
           <div className="leading-none">
-            <div className="text-[20px] font-black tracking-tight">{player.rating}</div>
+            {hideRating ? (
+              <div className="flex items-baseline gap-0.5">
+                <span className="text-[18px] font-black tracking-tight">{Math.round(player.value)}</span>
+                <span className="text-[8px] font-bold opacity-70">€M</span>
+              </div>
+            ) : (
+              <div className="text-[20px] font-black tracking-tight">{player.rating}</div>
+            )}
             <div className="text-[10px] font-bold opacity-80">{slotType}</div>
           </div>
           <div className="flex flex-col items-center gap-0.5 pt-0.5 text-[12px] leading-none">
@@ -60,8 +71,8 @@ export default function PlayerCard({
         </div>
 
         <div className="relative mt-0.5 flex items-center justify-center">
-          <span className="rounded bg-black/75 px-1.5 py-[1px] text-[9px] font-bold text-emerald-300">
-            {fmtValue(player.value)}
+          <span className="max-w-full truncate rounded bg-black/75 px-1.5 py-[1px] text-[9px] font-bold text-emerald-300">
+            {hideRating ? player.club : fmtValue(player.value)}
           </span>
         </div>
 

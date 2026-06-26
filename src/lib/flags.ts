@@ -10,6 +10,9 @@ const FLAGS: Record<string, string> = {
   Japan: '🇯🇵', Serbia: '🇷🇸', USA: '🇺🇸', Greece: '🇬🇷', Austria: '🇦🇹',
   Scotland: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'Burkina Faso': '🇧🇫', 'DR Congo': '🇨🇩', Kosovo: '🇽🇰',
   Poland: '🇵🇱', Slovakia: '🇸🇰', Guinea: '🇬🇳',
+  Wales: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', Ireland: '🇮🇪', 'Northern Ireland': '🇬🇧', Montenegro: '🇲🇪', Russia: '🇷🇺',
+  'Bosnia-Herzegovina': '🇧🇦', Iceland: '🇮🇸', Paraguay: '🇵🇾', Mozambique: '🇲🇿', Armenia: '🇦🇲',
+  Israel: '🇮🇱', 'South Korea': '🇰🇷',
 }
 
 export function flag(nationality: string): string {
