@@ -29,7 +29,7 @@ export default function Toolbar() {
     <div className="glass border-b border-white/10">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3 px-5 py-3">
         <div className="flex items-center gap-2 text-lg font-black tracking-tight text-white">
-          <span className="text-emerald-400">●</span> Squad Builder
+          <span className="text-blue-400">●</span> Squad Builder
         </div>
 
         <label className="flex items-center gap-2 text-xs text-white/55">

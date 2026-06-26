@@ -29,9 +29,9 @@ export default function RoleModal({
         className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-[#11171f] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-white/10 bg-gradient-to-r from-cyan-500/15 to-transparent px-4 py-3">
+        <div className="flex items-center justify-between border-b border-white/10 bg-gradient-to-r from-blue-500/15 to-transparent px-4 py-3">
           <div>
-            <div className="text-xs uppercase tracking-wide text-cyan-300">Player Instructions · {position}</div>
+            <div className="text-xs uppercase tracking-wide text-blue-300">Player Instructions · {position}</div>
             <div className="text-lg font-bold text-white">{player.name}</div>
           </div>
           <button onClick={onClose} className="rounded-md px-2 py-1 text-white/60 hover:bg-white/10">✕</button>
@@ -46,7 +46,7 @@ export default function RoleModal({
                 <button
                   onClick={() => setOpenRole(active ? null : r.name)}
                   className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm font-semibold
-                    ${chosen ? 'bg-cyan-500/20 text-cyan-100' : 'bg-white/5 text-white hover:bg-white/10'}`}
+                    ${chosen ? 'bg-blue-500/20 text-blue-100' : 'bg-white/5 text-white hover:bg-white/10'}`}
                 >
                   <span>{r.name}{chosen && entry?.focus ? ` · ${entry.focus}` : ''}</span>
                   <span className="text-white/40">{active ? '▾' : '▸'}</span>
@@ -63,7 +63,7 @@ export default function RoleModal({
                             onClose()
                           }}
                           className={`rounded-full border px-3 py-1 text-xs font-medium transition
-                            ${sel ? 'border-cyan-400 bg-cyan-400 text-black' : 'border-white/15 bg-white/5 text-white/80 hover:border-cyan-400 hover:text-white'}`}
+                            ${sel ? 'border-blue-400 bg-blue-400 text-black' : 'border-white/15 bg-white/5 text-white/80 hover:border-blue-400 hover:text-white'}`}
                         >
                           {f}
                         </button>

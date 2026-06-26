@@ -39,14 +39,14 @@ export default function ResultView({ draft, onExit }: { draft: Draft; onExit: ()
           if (!p) return null
           return (
             <div key={slot.id} style={{ transform: 'scale(0.82)' }}>
-              <PlayerCard player={p} slotType={slot.type} eligibility={eligibility(p, slot.type)} hideRating />
+              <PlayerCard player={p} slotType={slot.type} eligibility={eligibility(p, slot.type)} />
             </div>
           )
         })}
       </div>
 
       <div className="mb-4 flex justify-center gap-3">
-        <button onClick={start} className="rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-bold text-black hover:bg-cyan-400">Play again</button>
+        <button onClick={start} className="rounded-lg bg-blue-500 px-5 py-2.5 text-sm font-bold text-black hover:bg-blue-400">Play again</button>
         <button onClick={onExit} className="rounded-lg border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10">Back to modes</button>
       </div>
     </div>

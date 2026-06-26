@@ -19,7 +19,7 @@ export const MODES: GameMode[] = [
     name: 'Squad Builder',
     tagline: 'Build a dream XI under a budget cap, with real transfer values, formations and player roles.',
     emoji: '⚽',
-    accent: '#22d3ee',
+    accent: '#38bdf8',
     Component: ManagerMode,
   },
   {

@@ -30,7 +30,7 @@ export default function FormationChoice({ draft }: { draft: Draft }) {
       <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
         {formationChoices.map((name) => (
           <button key={name} onClick={() => chooseFormation(name)}
-            className="glass group rounded-xl border border-white/10 p-3 transition hover:border-cyan-400 hover:-translate-y-1">
+            className="glass group rounded-xl border border-white/10 p-3 transition hover:border-blue-400 hover:-translate-y-1">
             <FormationMini name={name} />
             <div className="mt-2 text-center text-sm font-bold text-white">{name}</div>
           </button>

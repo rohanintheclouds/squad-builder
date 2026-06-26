@@ -65,16 +65,19 @@ export default function GroupPanel({ draft, onPick, expanded, onToggleExpand }: 
         </button>
       )}
       <div className="border-b border-white/10 p-2.5">
-        <div className="mb-1.5 flex items-center justify-between text-xs">
-          <span className="font-bold tracking-wide text-white/90">PICK {Math.min(filled + 1, total)} / {total}</span>
-          <span className="flex items-center gap-1.5 text-white/50">
-            Rerolls
-            <span className="flex gap-1">
-              {Array.from({ length: 2 }, (_, i) => (
-                <span key={i} className={`h-2 w-2 rounded-full ${i < rerollsLeft ? 'bg-cyan-400' : 'bg-white/20'}`} />
-              ))}
-            </span>
-          </span>
+        <div className="mb-1.5 flex items-center justify-between text-[11px]">
+          <span className="font-bold tracking-wide text-white/80">PICK {Math.min(filled + 1, total)} / {total}</span>
+          {!emergency && (
+            <button onClick={reroll} disabled={rerollsLeft <= 0 || rolling}
+              className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2 py-1 font-semibold text-white/80 transition enabled:hover:bg-white/10 disabled:opacity-40">
+              🎲 Reroll
+              <span className="flex gap-0.5">
+                {Array.from({ length: 2 }, (_, i) => (
+                  <span key={i} className={`h-1.5 w-1.5 rounded-full ${i < rerollsLeft ? 'bg-blue-400' : 'bg-white/20'}`} />
+                ))}
+              </span>
+            </button>
+          )}
         </div>
 
         {emergency ? (
@@ -95,18 +98,11 @@ export default function GroupPanel({ draft, onPick, expanded, onToggleExpand }: 
         </div>
         )}
 
-        {!emergency && (
-          <button onClick={reroll} disabled={rerollsLeft <= 0 || rolling}
-            className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 py-1.5 text-xs font-semibold text-white/80 transition enabled:hover:bg-white/10 disabled:opacity-40">
-            🎲 Reroll {noun} · {rerollsLeft} left
-          </button>
-        )}
-
         {(!rolling || emergency) && (
           <>
             <div className="mt-2 flex gap-2">
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name or club…"
-                className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-2.5 py-1.5 text-sm outline-none focus:border-cyan-400" />
+                className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-2.5 py-1.5 text-sm outline-none focus:border-blue-400" />
               <select value={posFilter} onChange={(e) => setPosFilter(e.target.value as Position | 'ALL')} disabled={!!selectedSlotId}
                 className="rounded-lg border border-white/10 bg-black/40 px-2 py-1.5 text-xs disabled:opacity-40">
                 <option value="ALL">All pos</option>
@@ -115,15 +111,13 @@ export default function GroupPanel({ draft, onPick, expanded, onToggleExpand }: 
             </div>
 
             {selectedSlotType ? (
-              <div className="mt-2 flex items-center justify-between rounded-lg bg-cyan-500/15 px-2.5 py-1.5 text-xs text-cyan-200">
+              <div className="mt-2 flex items-center justify-between rounded-lg bg-blue-500/15 px-2.5 py-1.5 text-xs text-blue-200">
                 <span>Filling <b>{selectedSlotType}</b> · tap a player to place</span>
                 <button onClick={() => selectSlot(null)} className="rounded px-1.5 hover:bg-white/10">clear ✕</button>
               </div>
             ) : selectedPlayerId ? (
-              <div className="mt-2 rounded-lg bg-cyan-500/15 px-2.5 py-1.5 text-xs text-cyan-200">Now tap a highlighted position on the pitch.</div>
-            ) : (
-              <div className="mt-2 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs text-white/50">Tap a position on the pitch to filter, or pick a player.</div>
-            )}
+              <div className="mt-2 rounded-lg bg-blue-500/15 px-2.5 py-1.5 text-xs text-blue-200">Now tap a highlighted position on the pitch.</div>
+            ) : null}
           </>
         )}
       </div>
@@ -147,9 +141,9 @@ export default function GroupPanel({ draft, onPick, expanded, onToggleExpand }: 
                     selectPlayer(sel ? null : p.id); if (!sel) onPick?.()
                   }
                 }}
-                className={`flex w-full items-center gap-2.5 border-b border-white/5 px-3 py-2 text-left transition
-                  ${sel ? 'bg-cyan-500/20' : canClick ? 'hover:bg-white/5' : 'opacity-40'}`}>
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-yellow-200 to-yellow-500 text-[11px] font-black text-black shadow">
+                className={`flex w-full items-center gap-2.5 border-b border-white/5 px-3 py-2.5 text-left transition
+                  ${sel ? 'bg-blue-500/20' : canClick ? 'hover:bg-white/5' : 'opacity-40'}`}>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-yellow-200 to-yellow-500 text-[12px] font-black text-black shadow">
                   {p.primaryPos}
                 </span>
                 <span className="min-w-0 flex-1">

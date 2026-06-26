@@ -71,6 +71,8 @@ export type DraftState = {
   /** True when no pooled group can fill a remaining slot: draft any free agent under €40M. */
   emergency: boolean
   rerollsLeft: number
+  /** How many times each group has been rerolled away from -> lowers its future draw odds. */
+  skips: Record<string, number>
   selectedPlayerId: string | null
   selectedSlotId: string | null
 
@@ -113,10 +115,23 @@ export function createDraft(config: DraftConfig): Draft {
   // Auto-mulligan: keep drawing ONLY from the approved pool, skipping any group that has no
   // placeable player right now (re-randomize). The same group can come up again; only its
   // already-picked players are unavailable. Never draws from outside the pool.
-  const pickGroup = (lineup: Record<string, string>, pickedIds: string[], fn: string): string | null => {
+  // Weighted random: a group rerolled away from gets slightly less likely each time, with a
+  // diminishing penalty (1 skip ≈ 17% less, then less and less) so it never erodes to nothing.
+  const weightedPick = (groups: string[], skips: Record<string, number>): string => {
+    const w = groups.map((g) => 1 / (1 + (skips[g] ?? 0) * 0.2))
+    const total = w.reduce((a, b) => a + b, 0)
+    let r = Math.random() * total
+    for (let i = 0; i < groups.length; i++) {
+      r -= w[i]
+      if (r <= 0) return groups[i]
+    }
+    return groups[groups.length - 1]
+  }
+
+  const pickGroup = (lineup: Record<string, string>, pickedIds: string[], fn: string, skips: Record<string, number>): string | null => {
     const usable = pool.filter((g) => groupUsable(g, lineup, pickedIds, fn))
     if (!usable.length) return null
-    return usable[Math.floor(Math.random() * usable.length)]
+    return weightedPick(usable, skips)
   }
 
   const freshChoices = () => shuffle(FORMATIONS.map((f) => f.name)).slice(0, FORMATION_CHOICES)
@@ -130,23 +145,24 @@ export function createDraft(config: DraftConfig): Draft {
     group: null,
     emergency: false,
     rerollsLeft: REROLLS,
+    skips: {},
     selectedPlayerId: null,
     selectedSlotId: null,
 
     start: () =>
       set({
         phase: 'formation', formationChoices: freshChoices(), formationName: null,
-        lineup: {}, pickedIds: [], group: null, emergency: false, rerollsLeft: REROLLS, selectedPlayerId: null, selectedSlotId: null,
+        lineup: {}, pickedIds: [], group: null, emergency: false, rerollsLeft: REROLLS, skips: {}, selectedPlayerId: null, selectedSlotId: null,
       }),
 
     chooseFormation: (name) =>
-      set({ formationName: name, phase: 'draft', group: pickGroup({}, [], name), emergency: false, rerollsLeft: REROLLS, selectedPlayerId: null, selectedSlotId: null }),
+      set({ formationName: name, phase: 'draft', group: pickGroup({}, [], name, {}), emergency: false, rerollsLeft: REROLLS, skips: {}, selectedPlayerId: null, selectedSlotId: null }),
 
     selectPlayer: (id) => set({ selectedPlayerId: id, selectedSlotId: null }),
     selectSlot: (slotId) => set({ selectedSlotId: slotId, selectedPlayerId: null }),
 
     place: (playerId, slotId) => {
-      const { lineup, formationName, pickedIds } = get()
+      const { lineup, formationName, pickedIds, skips } = get()
       if (!formationName) return
       const player = byId.get(playerId)
       if (!player || !validSlotsFor(player, lineup, formationName).includes(slotId)) return
@@ -158,7 +174,7 @@ export function createDraft(config: DraftConfig): Draft {
       }
       // If no pooled group can fill a remaining slot, drop into emergency (free-agent) mode
       // instead of getting stuck or drawing from outside the pool.
-      const next = pickGroup(nextLineup, nextPicked, formationName)
+      const next = pickGroup(nextLineup, nextPicked, formationName, skips)
       set({
         lineup: nextLineup, pickedIds: nextPicked, selectedPlayerId: null, selectedSlotId: null,
         group: next, emergency: next === null,
@@ -166,12 +182,14 @@ export function createDraft(config: DraftConfig): Draft {
     },
 
     // Manual reroll: skip the current group for a different usable one (2 per game).
+    // The skipped group becomes slightly less likely to be drawn again (diminishing penalty).
     reroll: () => {
-      const { rerollsLeft, group, emergency, lineup, pickedIds, formationName } = get()
+      const { rerollsLeft, group, emergency, lineup, pickedIds, formationName, skips } = get()
       if (rerollsLeft <= 0 || emergency || !group || !formationName) return
       const others = pool.filter((g) => g !== group && groupUsable(g, lineup, pickedIds, formationName))
       if (!others.length) return // nothing else to roll to
-      set({ rerollsLeft: rerollsLeft - 1, group: others[Math.floor(Math.random() * others.length)], selectedPlayerId: null, selectedSlotId: null })
+      const nextSkips = { ...skips, [group]: (skips[group] ?? 0) + 1 }
+      set({ rerollsLeft: rerollsLeft - 1, skips: nextSkips, group: weightedPick(others, nextSkips), selectedPlayerId: null, selectedSlotId: null })
     },
   }))
 

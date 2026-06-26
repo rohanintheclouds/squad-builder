@@ -33,7 +33,7 @@ function Row({ player, eligColor, already, tooPricey, clickable, blocked, dragga
       onClick={() => canClick && onAssign()}
       className={`flex items-center gap-2.5 border-b border-white/5 px-3 py-2 text-left transition
         ${isDragging ? 'opacity-40' : ''}
-        ${blocked ? 'cursor-not-allowed opacity-45' : canClick ? `${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} hover:bg-cyan-500/10` : draggable ? 'cursor-grab' : 'cursor-default'}
+        ${blocked ? 'cursor-not-allowed opacity-45' : canClick ? `${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} hover:bg-blue-500/10` : draggable ? 'cursor-grab' : 'cursor-default'}
         ${already && !blocked ? 'opacity-45' : ''}`}
     >
       {eligColor && <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: eligColor }} />}
@@ -124,7 +124,7 @@ export default function SearchPanel({ draggable = true, onAfterAssign }: { dragg
         </div>
 
         {selectedSlot ? (
-          <div className="mb-2 rounded-lg bg-cyan-500/10 px-2.5 py-1.5 text-xs text-cyan-200">
+          <div className="mb-2 rounded-lg bg-blue-500/10 px-2.5 py-1.5 text-xs text-blue-200">
             Suggestions for <b>{selectedSlot.type}</b> · {tactic.name} · {fmtValue(remaining)} left
           </div>
         ) : (
@@ -137,7 +137,7 @@ export default function SearchPanel({ draggable = true, onAfterAssign }: { dragg
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search name or club…"
-          className="mb-2 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm outline-none focus:border-cyan-400"
+          className="mb-2 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm outline-none focus:border-blue-400"
         />
         <div className="grid grid-cols-3 gap-2">
           <select value={posFilter} onChange={(e) => setPosFilter(e.target.value as Position | 'ALL')}

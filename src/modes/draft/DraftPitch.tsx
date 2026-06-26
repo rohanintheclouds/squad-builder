@@ -33,7 +33,7 @@ export default function DraftPitch({ draft, compact = false }: { draft: Draft; c
             <div key={slot.id} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${slot.x}%`, top: `${slot.y}%` }}>
               <div style={{ transform: `scale(${scale})` }}>
                 {player ? (
-                  <PlayerCard player={player} slotType={slot.type} eligibility={eligibility(player, slot.type)} hideRating />
+                  <PlayerCard player={player} slotType={slot.type} eligibility={eligibility(player, slot.type)} />
                 ) : (
                   <button
                     onClick={() => {
@@ -43,10 +43,10 @@ export default function DraftPitch({ draft, compact = false }: { draft: Draft; c
                     className="group relative flex h-[88px] w-[78px] cursor-pointer items-center justify-center"
                   >
                     <span className={`absolute inset-0 transition ${highlight ? 'animate-pulse' : 'opacity-80 group-hover:opacity-100'}`}
-                      style={{ clipPath: HEX, background: highlight ? '#22d3ee' : 'rgba(52,211,153,0.5)' }} />
+                      style={{ clipPath: HEX, background: highlight ? '#38bdf8' : 'rgba(56,189,248,0.5)' }} />
                     <span className="absolute inset-[2px] flex items-center justify-center"
                       style={{ clipPath: HEX, background: 'linear-gradient(160deg, rgba(20,28,38,0.95), rgba(10,15,21,0.95))' }}>
-                      <span className={`text-lg font-light ${highlight ? 'text-cyan-300' : 'text-emerald-300/80'}`}>{isPlaceTarget ? '↓' : '+'}</span>
+                      <span className={`text-lg font-light ${highlight ? 'text-blue-300' : 'text-emerald-300/80'}`}>{isPlaceTarget ? '↓' : '+'}</span>
                     </span>
                     <span className="absolute -bottom-1.5 rounded px-1.5 text-[10px] font-bold tracking-wide text-white/90"
                       style={{ background: isSelectedSlot ? '#0891b2' : 'rgba(0,0,0,0.7)' }}>{slot.type}</span>

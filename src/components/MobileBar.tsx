@@ -27,7 +27,7 @@ export default function MobileBar() {
     <div className="glass border-b border-white/10 px-3 pb-2 pt-2.5">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-base font-black tracking-tight text-white">
-          <span className="text-emerald-400">●</span> Squad Builder
+          <span className="text-blue-400">●</span> Squad Builder
         </div>
         <div className="flex items-center gap-3 text-[11px]">
           <span className="text-white/70">RTG <b className="text-white">{teamRtg}</b></span>

@@ -26,7 +26,7 @@ export default function DraftMode({ draft, onExit }: { draft: Draft; onExit: () 
             <DraftPitch draft={draft} compact />
           </div>
         </div>
-        <div className="shrink-0 border-t border-white/10 transition-all duration-300" style={{ height: expanded ? '74vh' : '34vh' }}>
+        <div className="shrink-0 border-t border-white/10 transition-all duration-300" style={{ height: expanded ? '76vh' : '40vh' }}>
           <GroupPanel draft={draft} expanded={expanded} onToggleExpand={() => setExpanded((e) => !e)} onPick={() => setExpanded(false)} />
         </div>
       </div>

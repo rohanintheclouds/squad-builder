@@ -77,7 +77,7 @@ export default function ManagerMode() {
           {!sheetOpen && (
             <button
               onClick={() => setSheetOpen(true)}
-              className="fixed bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-full bg-cyan-500 px-6 py-3 text-sm font-bold text-black shadow-xl shadow-cyan-500/30"
+              className="fixed bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-full bg-blue-500 px-6 py-3 text-sm font-bold text-black shadow-xl shadow-blue-500/30"
             >
               🔍 Search players
             </button>
@@ -119,7 +119,7 @@ export default function ManagerMode() {
       <DragOverlay dropAnimation={null}>
         {active && (
           <div className="rotate-3 scale-110">
-            <PlayerCard player={active.player} slotType={active.pos} eligibility={eligibility(active.player, active.pos)} hideRating />
+            <PlayerCard player={active.player} slotType={active.pos} eligibility={eligibility(active.player, active.pos)} showValue />
           </div>
         )}
       </DragOverlay>

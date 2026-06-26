@@ -46,7 +46,7 @@ function Slot({ slot, onEditRole, compact, draggable }: {
               className={`block ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
               title={draggable ? 'Drag to move · click to set role' : 'Tap to set role'}
             >
-              <PlayerCard player={player} slotType={slot.type} eligibility={elig} role={entry?.role} focus={entry?.focus} hideRating />
+              <PlayerCard player={player} slotType={slot.type} eligibility={elig} role={entry?.role} focus={entry?.focus} showValue />
             </button>
             <span
               role="button"
@@ -67,13 +67,13 @@ function Slot({ slot, onEditRole, compact, draggable }: {
           >
             <span
               className={`absolute inset-0 transition ${selected || isOver ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}
-              style={{ clipPath: HEX, background: selected || isOver ? '#22d3ee' : 'rgba(52,211,153,0.55)' }}
+              style={{ clipPath: HEX, background: selected || isOver ? '#38bdf8' : 'rgba(56,189,248,0.55)' }}
             />
             <span
               className="absolute inset-[2px] flex items-center justify-center"
               style={{ clipPath: HEX, background: 'linear-gradient(160deg, rgba(20,28,38,0.95), rgba(10,15,21,0.95))' }}
             >
-              <span className={`text-2xl font-light ${selected || isOver ? 'text-cyan-300' : 'text-emerald-300/90'}`}>+</span>
+              <span className={`text-2xl font-light ${selected || isOver ? 'text-blue-300' : 'text-emerald-300/90'}`}>+</span>
             </span>
             <span className="absolute -bottom-1.5 rounded bg-black/70 px-1.5 text-[10px] font-bold tracking-wide text-white/90">
               {slot.type}
