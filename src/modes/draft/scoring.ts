@@ -19,7 +19,7 @@ function normalCdf(z: number): number {
 export type Tier = { key: string; label: string; blurb: string; color: string; minPercentile: number }
 
 export const WC_TIERS: Tier[] = [
-  { key: 'winner', label: 'World Cup Winner', blurb: 'Top ~2% of all teams. Legendary.', color: '#fbbf24', minPercentile: 0.988 },
+  { key: 'winner', label: 'World Cup Winner', blurb: 'Top ~2% of all teams. Legendary.', color: '#fbbf24', minPercentile: 0.991 },
   { key: 'final', label: 'Finalist', blurb: 'So close to glory. A truly elite squad.', color: '#e5e7eb', minPercentile: 0.95 },
   { key: 'semi', label: 'Semi-Finalist', blurb: 'Among the very best in the world.', color: '#a78bfa', minPercentile: 0.85 },
   { key: 'quarter', label: 'Quarter-Finalist', blurb: 'A strong, well-balanced side.', color: '#38bdf8', minPercentile: 0.62 },
@@ -30,7 +30,7 @@ export const WC_TIERS: Tier[] = [
 ]
 
 export const CL_TIERS: Tier[] = [
-  { key: 'winner', label: 'Champions League Winner', blurb: 'Top ~2% of all squads. Kings of Europe.', color: '#fbbf24', minPercentile: 0.988 },
+  { key: 'winner', label: 'Champions League Winner', blurb: 'Top ~2% of all squads. Kings of Europe.', color: '#fbbf24', minPercentile: 0.991 },
   { key: 'final', label: 'Finalist', blurb: 'One night from the trophy.', color: '#e5e7eb', minPercentile: 0.95 },
   { key: 'semi', label: 'Semi-Finalist', blurb: 'Among Europe’s elite four.', color: '#a78bfa', minPercentile: 0.85 },
   { key: 'quarter', label: 'Quarter-Finalist', blurb: 'A genuine European heavyweight.', color: '#38bdf8', minPercentile: 0.62 },

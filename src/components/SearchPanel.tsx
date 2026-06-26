@@ -7,6 +7,7 @@ import { TACTICS } from '../data/tactics'
 import { eligibility, ELIGIBILITY_COLOR } from '../lib/positions'
 import { amberCount, AMBER_LIMIT } from '../lib/squad'
 import { fmtValue } from '../lib/format'
+import { tierBadge } from '../lib/tier'
 import { flag } from '../lib/flags'
 import type { Player, Position } from '../types'
 
@@ -37,7 +38,7 @@ function Row({ player, eligColor, already, tooPricey, clickable, blocked, dragga
         ${already && !blocked ? 'opacity-45' : ''}`}
     >
       {eligColor && <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: eligColor }} />}
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-yellow-200 to-yellow-500 text-[11px] font-black text-black shadow">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[11px] font-black shadow" style={tierBadge(player.rating)}>
         {player.primaryPos}
       </span>
       <span className="min-w-0 flex-1">

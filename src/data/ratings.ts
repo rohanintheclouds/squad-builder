@@ -16,20 +16,21 @@ export const OVERRIDES: Record<string, number> = {
   'Kylian Mbappé': 92, 'Lamine Yamal': 92, 'Erling Haaland': 91, 'Harry Kane': 90,
   'Michael Olise': 90, 'Vinícius Júnior': 89, 'Jude Bellingham': 89,
   // --- Top (86-88) ---
-  'Mohamed Salah': 87, 'Bukayo Saka': 88, 'Declan Rice': 88, 'Ousmane Dembélé': 88,
-  'Gianluigi Donnarumma': 88, 'Alisson': 86, 'Dominik Szoboszlai': 87, 'Pedri': 87,
-  'Vitinha': 87, 'Jamal Musiala': 87, 'Rúben Dias': 87, 'William Saliba': 87,
+  'Mohamed Salah': 86, 'Bukayo Saka': 87, 'Declan Rice': 89, 'Ousmane Dembélé': 88,
+  'Gianluigi Donnarumma': 87, 'Alisson': 86, 'Dominik Szoboszlai': 87, 'Pedri': 89,
+  'Vitinha': 87, 'Jamal Musiala': 87, 'Rúben Dias': 84, 'William Saliba': 87,
   'Virgil van Dijk': 87, 'Thibaut Courtois': 87, 'Federico Valverde': 87, 'Raphinha': 87,
-  'Achraf Hakimi': 87, 'Lionel Messi': 87, 'Rodri': 86, 'Cole Palmer': 86, 'Phil Foden': 86,
-  'Khvicha Kvaratskhelia': 86, 'Martin Ødegaard': 86, 'Frenkie de Jong': 86, 'Alexander Isak': 86,
-  'Julián Álvarez': 86, 'Bruno Fernandes': 86, 'Gabriel Magalhães': 86, 'Sandro Tonali': 86,
-  'Nuno Mendes': 86, 'Mike Maignan': 86, 'David Raya': 86, 'Robert Lewandowski': 86, 'Ederson': 84,
+  'Achraf Hakimi': 87, 'Lionel Messi': 86, 'Rodri': 86, 'Cole Palmer': 86, 'Phil Foden': 86,
+  'Khvicha Kvaratskhelia': 87, 'Martin Ødegaard': 84, 'Frenkie de Jong': 86, 'Alexander Isak': 86,
+  'Julián Álvarez': 86, 'Bruno Fernandes': 88, 'Gabriel Magalhães': 86, 'Sandro Tonali': 86,
+  'Nuno Mendes': 86, 'Mike Maignan': 86, 'David Raya': 86, 'Robert Lewandowski': 86, 'Ederson': 86,
   // --- Very good (84-85) ---
-  'Lautaro Martínez': 85, 'Florian Wirtz': 85, 'Viktor Gyökeres': 85, 'Nico Williams': 85,
+  'Lautaro Martínez': 81, 'Florian Wirtz': 85, 'Viktor Gyökeres': 85, 'Nico Williams': 85,
+  'Nick Woltemade': 80,
   'Bruno Guimarães': 85, 'Alessandro Bastoni': 85, 'Marquinhos': 85, 'Joško Gvardiol': 85,
   'Dayot Upamecano': 85, 'Cristian Romero': 85, 'Trent Alexander-Arnold': 85, 'Rafael Leão': 85,
   'Pedro Neto': 85, 'Antoine Griezmann': 85, 'Omar Marmoush': 85, 'Gabriel Martinelli': 85,
-  'Theo Hernández': 84, 'Emiliano Martínez': 85, 'Kevin De Bruyne': 85, 'Manuel Neuer': 85,
+  'Theo Hernández': 84, 'Emiliano Martínez': 85, 'Kevin De Bruyne': 84, 'Manuel Neuer': 84,
   'João Neves': 85, 'Aurélien Tchouaméni': 84, 'Jérémy Doku': 84, 'Cody Gakpo': 84,
   'Eberechi Eze': 84, 'Anthony Gordon': 84, 'Jules Koundé': 84, 'Arda Güler': 84,
   'Pau Cubarsí': 84, 'Micky van de Ven': 84, 'Marc Guéhi': 84, 'Manuel Locatelli': 84,
@@ -37,7 +38,7 @@ export const OVERRIDES: Record<string, number> = {
   'Kenan Yıldız': 84, 'Alexis Mac Allister': 85, 'Tijjani Reijnders': 84, 'Gonçalo Ramos': 84,
   'Karim Benzema': 84, 'Mateo Retegui': 84,
   // --- Good (82-83) ---
-  'Reece James': 83, 'Levi Colwill': 83, 'Dean Huijsen': 83, 'Yan Diomande': 83, 'Estêvão': 83,
+  'Reece James': 83, 'Levi Colwill': 83, 'Dean Huijsen': 81, 'Yan Diomande': 84, 'Estêvão': 83,
   'Hugo Ekitiké': 83, 'João Pedro': 83, 'Matheus Cunha': 83, 'Benjamin Šeško': 83,
   'Warren Zaïre-Emery': 83, 'Aleksandar Pavlović': 83, 'Morgan Gibbs-White': 83, 'Mohammed Kudus': 83,
   'Guglielmo Vicario': 83, 'Unai Simón': 84, 'Rúben Neves': 83, 'Scott McTominay': 84,
@@ -48,9 +49,21 @@ export const OVERRIDES: Record<string, number> = {
   'Giorgi Mamardashvili': 82, 'André Onana': 81, 'Denzel Dumfries': 83, 'Ollie Watkins': 84,
   'Rasmus Højlund': 81, 'Joelinton': 82, 'Youri Tielemans': 82, 'Diogo Dalot': 82,
   'Sadio Mané': 81, 'Sergio Ramos': 80, 'Thomas Müller': 81, 'Marco Reus': 79,
-  'Pape Matar Sarr': 81, 'Eduardo Camavinga': 84, 'Nico Paz': 83, 'Gavi': 83,
+  'Pape Matar Sarr': 81, 'Eduardo Camavinga': 84, 'Nico Paz': 83, 'Gavi': 81,
   'Lennart Karl': 82, 'Franco Mastantuono': 82, 'Rayan Cherki': 84, 'Kai Havertz': 83,
-  'Dominic Solanke': 82, 'Luis Díaz': 85,
+  'Dominic Solanke': 82, 'Luis Díaz': 85, "Nico O'Reilly": 83,
+  // added big names (curated; will be refined by the stats pipeline)
+  'Antonio Rüdiger': 84, 'Éder Militão': 83, 'Darwin Núñez': 80, 'Casemiro': 81, 'Leroy Sané': 81,
+  'Raheem Sterling': 77, 'Romelu Lukaku': 81, 'Thiago Silva': 76, 'Harry Maguire': 80,
+  'Dani Carvajal': 81, 'Aaron Wan-Bissaka': 81,
+  'Willian Pacho': 84, 'Jurriën Timber': 83, 'Victor Osimhen': 83, 'Alejandro Balde': 79,
+  'Rodrygo': 80, 'Endrick': 78, 'Alphonso Davies': 80, 'Christian Pulisic': 83, 'Moisés Caicedo': 84,
+  // value sanity-check: high transfer value but under-rated by the formula -> nudged up
+  // (prospects valued on potential — Kroupi/Rayan/Vušković/Jacquet — left alone)
+  'Enzo Fernández': 84, 'Ryan Gravenberch': 83, 'Martín Zubimendi': 83, 'Bryan Mbeumo': 83,
+  'Bradley Barcola': 83, 'Adam Wharton': 81, 'Kobbie Mainoo': 80, 'Dani Olmo': 83,
+  'Mason Greenwood': 82, 'Riccardo Calafiori': 82, 'Carlos Baleba': 81, 'Igor Thiago': 79,
+  'Pablo Barrios': 79, 'Iliman Ndiaye': 79,
 }
 
 const LEAGUE_ADJ: Record<string, number> = {
@@ -67,8 +80,20 @@ export function formulaRating(value: number | null, league: string): number {
   return Math.max(70, Math.min(83, Math.round(58 + 11 * Math.log10(Math.max(1, value)) + adj)))
 }
 
+// Last-season (2024/25) form from API-Football, keyed by player name (see scripts/update-ratings.mjs).
+// A LIGHT secondary nudge only — FC26 + SofaScore (the OVERRIDES) stay primary.
+import FORM from './form.json'
+type FormRow = { r: number; m: number }
+const formAbility = (r: number) => Math.max(60, Math.min(93, Math.round(33 + 7 * r)))
+
 export function ratingFor(name: string, value: number | null, league: string): number {
-  return OVERRIDES[name] ?? formulaRating(value, league)
+  const base = OVERRIDES[name] ?? formulaRating(value, league)
+  const f = (FORM as Record<string, FormRow>)[name]
+  if (f && f.m >= 900 && f.r > 0) {
+    const w = OVERRIDES[name] != null ? 0.15 : 0.35 // curated -> light nudge; uncurated -> a bit more
+    return Math.max(40, Math.min(99, Math.round(base * (1 - w) + formAbility(f.r) * w)))
+  }
+  return base
 }
 
 /**

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { validSlotsFor, emergencyPlayers, EMERGENCY_MAX, type Draft } from './engine'
 import { FORMATIONS } from '../../data/formations'
 import { fmtValue } from '../../lib/format'
+import { tierBadge } from '../../lib/tier'
 import GroupBadge from './GroupBadge'
 import type { Position } from '../../types'
 
@@ -143,7 +144,7 @@ export default function GroupPanel({ draft, onPick, expanded, onToggleExpand }: 
                 }}
                 className={`flex w-full items-center gap-2.5 border-b border-white/5 px-3 py-2.5 text-left transition
                   ${sel ? 'bg-blue-500/20' : canClick ? 'hover:bg-white/5' : 'opacity-40'}`}>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-yellow-200 to-yellow-500 text-[12px] font-black text-black shadow">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[12px] font-black shadow" style={tierBadge(p.rating)}>
                   {p.primaryPos}
                 </span>
                 <span className="min-w-0 flex-1">

@@ -36,6 +36,20 @@ revise `OVERRIDES` per the blend above, then **recalibrate** the bell curve: run
 drafts to get the casual/expert average-rating, and set `MEAN` / `TEAM_SD` in
 `src/modes/draft/scoring.ts` (MEAN ≈ casual mean; SD so expert lands Quarter/Semi). Then build + QA + push.
 
+## Last-season form (API-Football)
+
+`scripts/update-ratings.mjs` pulls **2024/25** per-player season ratings + stats from API-Football
+(key in `.env` as `API_FOOTBALL_KEY`, gitignored) into `src/data/form.json`. `ratings.ts` blends
+this in as a **light secondary nudge** (~15% for curated players, ~35% for uncurated), so recent
+form tilts a rating without overriding the FC26/SofaScore base.
+
+- `node scripts/update-ratings.mjs --refresh` — hit the API (caps at ~46 calls; matches API's
+  abbreviated names like "E. Haaland" to our names by last-name + initial).
+- Free plan = **100 calls/day**, covers up to season 2024 (2024/25). A full top-club sweep is
+  ~25–45 calls, so one refresh fits in a day. 2024/25 is static, so you only refresh once per season
+  (live-season form would need a paid plan).
+- After refresh: `npm run build` + QA + (recalibrate `MEAN`/`TEAM_SD` if the average shifts).
+
 ## Monthly refresh (one prompt)
 
 Ask: **"update the player data"**. The flow:

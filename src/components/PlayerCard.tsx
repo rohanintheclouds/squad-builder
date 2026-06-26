@@ -1,15 +1,7 @@
 import type { Player, Eligibility, Position } from '../types'
 import { ELIGIBILITY_COLOR } from '../lib/positions'
 import { flag } from '../lib/flags'
-
-// Card tier is driven by the player's (hidden) rating, FUT-style:
-//   90+  glossy purple (special)   80+  gold   70+  silver   else bronze
-function tier(rating: number) {
-  if (rating >= 90) return { from: '#efe1ff', via: '#a855f7', to: '#6d28d9', ink: '#2a0a4f', purple: true }
-  if (rating >= 80) return { from: '#fbf0c4', via: '#e7c65a', to: '#b8922f', ink: '#3a2c05', purple: false }
-  if (rating >= 70) return { from: '#eef1f6', via: '#c6ccd8', to: '#9aa3b2', ink: '#23272f', purple: false }
-  return { from: '#f0d6b8', via: '#d09e6f', to: '#a9703f', ink: '#3a2410', purple: false }
-}
+import { tierOf, TIER } from '../lib/tier'
 
 export default function PlayerCard({
   player,
@@ -29,7 +21,7 @@ export default function PlayerCard({
   /** Lead with market value (Squad Builder). Otherwise lead with position. Rating is never shown. */
   showValue?: boolean
 }) {
-  const t = tier(player.rating)
+  const t = { ...TIER[tierOf(player.rating)], purple: tierOf(player.rating) === 'purple' }
   const last = player.name.split(' ').slice(-1)[0]
   return (
     <div

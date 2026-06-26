@@ -520,4 +520,15 @@
 {"name":"Sergio Ramos","nationality":"Spain","club":"Monterrey","league":"Liga MX","value":4,"positions":["CB"],"age":40},
 {"name":"Riyad Mahrez","nationality":"Algeria","club":"Al-Ahli","league":"Saudi Pro League","value":16,"positions":["RW"],"age":35},
 {"name":"Marco Reus","nationality":"Germany","club":"LA Galaxy","league":"MLS","value":5,"positions":["CAM"],"age":37},
-{"name":"Ederson","nationality":"Brazil","club":"Fenerbahçe","league":"Süper Lig","value":16,"positions":["GK"],"age":32}]
+{"name":"Ederson","nationality":"Brazil","club":"Fenerbahçe","league":"Süper Lig","value":16,"positions":["GK"],"age":32},
+{"name":"Antonio Rüdiger","nationality":"Germany","club":"Real Madrid","league":"La Liga","value":18,"positions":["CB"],"age":33},
+{"name":"Éder Militão","nationality":"Brazil","club":"Real Madrid","league":"La Liga","value":45,"positions":["CB"],"age":28},
+{"name":"Darwin Núñez","nationality":"Uruguay","club":"Al-Hilal","league":"Saudi Pro League","value":45,"positions":["ST","CF"],"age":26},
+{"name":"Casemiro","nationality":"Brazil","club":"Man United","league":"Premier League","value":12,"positions":["CDM"],"age":34},
+{"name":"Leroy Sané","nationality":"Germany","club":"Galatasaray","league":"Süper Lig","value":25,"positions":["RW","LW"],"age":30},
+{"name":"Raheem Sterling","nationality":"England","club":"Chelsea","league":"Premier League","value":18,"positions":["LW","RW"],"age":31},
+{"name":"Romelu Lukaku","nationality":"Belgium","club":"Napoli","league":"Serie A","value":22,"positions":["ST"],"age":33},
+{"name":"Thiago Silva","nationality":"Brazil","club":"Fluminense","league":"Brasileirão","value":3,"positions":["CB"],"age":41},
+{"name":"Harry Maguire","nationality":"England","club":"Man United","league":"Premier League","value":18,"positions":["CB"],"age":33},
+{"name":"Dani Carvajal","nationality":"Spain","club":"Real Madrid","league":"La Liga","value":12,"positions":["RB","RWB"],"age":34},
+{"name":"Aaron Wan-Bissaka","nationality":"England","club":"West Ham","league":"Premier League","value":28,"positions":["RB","RWB"],"age":28}]
