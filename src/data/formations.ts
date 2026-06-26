@@ -46,7 +46,6 @@ const DEFS: Def[] = [
   { name: '3-4-1-2', group: '3-Back', lines: [['CB', 'CB', 'CB'], ['LM', 'CM', 'CM', 'RM'], ['CAM'], ['ST', 'ST']] },
   { name: '3-4-2-1', group: '3-Back', lines: [['CB', 'CB', 'CB'], ['LM', 'CM', 'CM', 'RM'], ['CAM', 'CAM'], ['ST']] },
   { name: '3-4-3', group: '3-Back', lines: [['CB', 'CB', 'CB'], ['LM', 'CM', 'CM', 'RM'], ['LW', 'ST', 'RW']] },
-  { name: '3-4-3 Flat', group: '3-Back', lines: [['CB', 'CB', 'CB'], ['LM', 'CM', 'CM', 'RM'], ['LW', 'ST', 'RW']] },
   { name: '3-5-2', group: '3-Back', lines: [['CB', 'CB', 'CB'], ['LWB', 'CM', 'CDM', 'CM', 'RWB'], ['ST', 'ST']] },
 
   // --- 4-Back ---
@@ -66,9 +65,9 @@ const DEFS: Def[] = [
   { name: '4-3-1-2', group: '4-Back', lines: [['LB', 'CB', 'CB', 'RB'], ['CM', 'CM', 'CM'], ['CAM'], ['ST', 'ST']] },
   { name: '4-3-2-1', group: '4-Back', lines: [['LB', 'CB', 'CB', 'RB'], ['CM', 'CM', 'CM'], ['CAM', 'CAM'], ['ST']] },
   { name: '4-3-3', group: '4-Back', lines: [['LB', 'CB', 'CB', 'RB'], ['CM', 'CM', 'CM'], ['LW', 'ST', 'RW']] },
-  { name: '4-3-3 (2)', group: '4-Back', lines: [['LB', 'CB', 'CB', 'RB'], ['CDM', 'CM', 'CM'], ['LW', 'ST', 'RW']] },
+  { name: '4-3-3 (2)', group: '4-Back', lines: [['LB', 'CB', 'CB', 'RB'], ['CM', 'CDM', 'CM'], ['LW', 'ST', 'RW']] },
   { name: '4-3-3 (3)', group: '4-Back', lines: [['LB', 'CB', 'CB', 'RB'], ['CM', 'CDM', 'CM'], ['LW', 'ST', 'RW']] },
-  { name: '4-3-3 (4)', group: '4-Back', lines: [['LB', 'CB', 'CB', 'RB'], ['CDM', 'CDM', 'CM'], ['LW', 'ST', 'RW']] },
+  { name: '4-3-3 (4)', group: '4-Back', lines: [['LB', 'CB', 'CB', 'RB'], ['CDM', 'CM', 'CDM'], ['LW', 'ST', 'RW']] },
   { name: '4-3-3 Attack', group: '4-Back', lines: [['LB', 'CB', 'CB', 'RB'], ['CM', 'CAM', 'CM'], ['LW', 'ST', 'RW']] },
   { name: '4-3-3 Defend', group: '4-Back', lines: [['LB', 'CB', 'CB', 'RB'], ['CDM', 'CDM', 'CM'], ['LW', 'ST', 'RW']] },
   { name: '4-3-3 Flat', group: '4-Back', lines: [['LB', 'CB', 'CB', 'RB'], ['CM', 'CM', 'CM'], ['LW', 'ST', 'RW']] },
