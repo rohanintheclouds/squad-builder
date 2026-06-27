@@ -67,26 +67,48 @@ export const eligibility = (player: Player, slot: Position): Eligibility => clas
 /** Stricter eligibility used by the draft modes (fewer amber stretches). */
 export const eligibilityStrict = (player: Player, slot: Position): Eligibility => classify(player, slot, DRAFT_ADJACENCY)
 
-// Vertical "line" per position for severity scaling (GK far from everyone; the bigger the gap
-// between a player's natural line and the slot's line, the more outlandish the move).
-const LINE: Record<Position, number> = {
-  GK: 0,
-  CB: 3, LB: 3, RB: 3, LWB: 3, RWB: 3,
-  CDM: 4, CM: 4, CAM: 4, LM: 4, RM: 4,
-  LW: 5, RW: 5, CF: 5, ST: 5,
+// Every position placed on a 2D pitch grid: x = width (−1 left · 0 centre · +1 right),
+// y = depth (0 GK → 5 striker). The penalty for an out-of-position move is derived from the
+// distance between a player's nearest natural position and the slot, so EVERY pairing is scored:
+// a CM shifted wide to RM, a striker dropped to CDM, a left back flipped to the right, etc.
+const COORD: Record<Position, [number, number]> = {
+  GK:  [0, 0],
+  CB:  [0, 2],
+  LB:  [-1, 2],   RB:  [1, 2],
+  LWB: [-1, 2.4], RWB: [1, 2.4],
+  CDM: [0, 3],
+  CM:  [0, 3.4],
+  LM:  [-1, 3.4], RM:  [1, 3.4],
+  CAM: [0, 3.9],
+  LW:  [-1, 4.4], RW:  [1, 4.4],
+  CF:  [0, 4.6],
+  ST:  [0, 5],
+}
+
+// Penalty (rating points) for moving between two specific positions. Depth gaps hurt the most
+// (quadratically: a striker at CB is a disaster), width gaps hurt moderately (a wrong-side or
+// central↔wide move), and anything to/from GK is brutal. Same position = 0.
+function posPenalty(from: Position, slot: Position): number {
+  if (from === slot) return 0
+  if ((from === 'GK') !== (slot === 'GK')) return 40 // keeper ↔ outfield is off the charts
+  const [fx, fy] = COORD[from]
+  const [sx, sy] = COORD[slot]
+  const dy = Math.abs(fy - sy)
+  const dx = Math.abs(fx - sx)
+  return Math.min(40, Math.round(2.5 * dy * dy + 3 * dx))
 }
 
 /**
- * Rating penalty (points) for playing a player out of position, scaled by how far the move is.
- * 0 if natural (green). Small for adjacent lines (LM→LB, CDM→CB), big across lines (ST→CB),
- * brutal anything to/from GK (ST→GK). Used by Squad Builder's team rating + card callout.
+ * Rating penalty (points) for playing a player out of position, taken from their BEST natural
+ * position. 0 if natural (green). Scales with how far the move is across the pitch in both depth
+ * and width: small for near moves (CM→RM ≈ 3, CB→CDM ≈ 3), bigger across lines (ST→CDM ≈ 10,
+ * ST→CB ≈ 23), brutal to/from GK (40). Used by Squad Builder's team rating + card callout.
  */
 export function oopSeverity(player: Player, slot: Position): number {
   if (eligibility(player, slot) === 'green') return 0
-  const sl = LINE[slot]
-  let dist = Infinity
-  for (const p of player.eligiblePos) dist = Math.min(dist, Math.abs(LINE[p] - sl))
-  return Math.min(40, Math.round(3 * dist * dist))
+  let best = Infinity
+  for (const p of player.eligiblePos) best = Math.min(best, posPenalty(p, slot))
+  return best === Infinity ? 0 : best
 }
 
 /** Relation between two positions (for Guess the Player): exact, semi-related, or unrelated. */

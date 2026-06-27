@@ -38,7 +38,7 @@ export default function App() {
       <div className="min-h-0 flex-1">
         <Mode onExit={() => setScreen('modes')} />
       </div>
-      {showRules && <RulesModal title={mode.name} emoji={mode.emoji} rules={mode.rules} onClose={() => setShowRules(false)} />}
+      {showRules && <RulesModal title={mode.name} accent={mode.accent} rules={mode.rules} onClose={() => setShowRules(false)} />}
     </div>
   )
 }

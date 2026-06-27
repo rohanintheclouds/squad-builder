@@ -4,13 +4,27 @@ import RoadToWorldCup from './roadwc'
 import RoadToCL from './roadcl'
 import GuessThePlayer from './guess/GuessThePlayer'
 
+export type Swatch = 'green' | 'amber' | 'red' | 'neutral'
+
+/** One content block inside a mode's "How to play" panel. */
+export type RuleBlock =
+  | { type: 'steps'; heading: string; items: string[] } // numbered sequence
+  | { type: 'list'; heading: string; items: string[] } // bulleted points
+  | { type: 'legend'; heading: string; items: { swatch: Swatch; term: string; desc: string }[] }
+
+export type ModeRules = {
+  /** One-line statement of the goal, shown prominently at the top. */
+  objective: string
+  blocks: RuleBlock[]
+}
+
 export type GameMode = {
   id: string
   name: string
   tagline: string
   emoji: string
   accent: string
-  rules: string[]
+  rules: ModeRules
   Component: ComponentType<{ onExit: () => void }>
 }
 
@@ -22,13 +36,38 @@ export const MODES: GameMode[] = [
     tagline: 'Build a dream XI under a budget cap, with real transfer values, formations and player roles.',
     emoji: '⚽',
     accent: '#38bdf8',
-    rules: [
-      'Build a starting XI and keep the total under your budget cap (set it in the toolbar).',
-      'Every card shows the player’s real transfer value; the running total must fit the cap.',
-      'Pick any formation and a tactic, then tap a slot and a player to fill it (or drag on desktop).',
-      'Position fit: 🟩 natural · 🟨 out of position · 🟥 can’t play there. Max 3 🟨 players.',
-      'Tap a player on the pitch to set their role.',
-    ],
+    rules: {
+      objective: 'Build the strongest possible starting XI without exceeding your budget cap.',
+      blocks: [
+        {
+          type: 'steps',
+          heading: 'How to play',
+          items: [
+            'Set your budget cap, formation and tactic in the toolbar.',
+            'Tap an empty slot for tactic-aware suggestions, or drag any player onto the pitch.',
+            'Each card shows the player’s real transfer value. Keep the running total under your cap.',
+            'Tap a player already on the pitch to assign a role and attacking focus.',
+          ],
+        },
+        {
+          type: 'legend',
+          heading: 'Position fit',
+          items: [
+            { swatch: 'green', term: 'Natural', desc: 'The player’s best position. No rating penalty.' },
+            { swatch: 'amber', term: 'Out of position', desc: 'Plausible but not ideal. The first three are free; each one after that costs rating points.' },
+            { swatch: 'red', term: 'Heavily out of position', desc: 'A real stretch, such as a striker at centre-back. Always costs rating points.' },
+          ],
+        },
+        {
+          type: 'list',
+          heading: 'Scoring',
+          items: [
+            'Any player can fill any slot. The further the move from their natural role, the larger the penalty.',
+            'The squad rating shown at the top already accounts for every out-of-position penalty.',
+          ],
+        },
+      ],
+    },
     Component: ManagerMode,
   },
   {
@@ -37,14 +76,38 @@ export const MODES: GameMode[] = [
     tagline: 'A random nation is drawn each pick. Choose players blind to their rating and chase the trophy.',
     emoji: '🏆',
     accent: '#fbbf24',
-    rules: [
-      'Pick 1 of 5 random formations to start.',
-      'A random nation is drawn each pick — choose one of its players for an open spot.',
-      'You can’t see ratings; pick by club, value and position.',
-      'Position fit: 🟩 natural · 🟨 out of position (max 3) · 🟥 not allowed.',
-      '2 rerolls if you don’t want a nation. The same nation can come up again.',
-      'Fill all 11 to get your World Cup placement — better players finish higher.',
-    ],
+    rules: {
+      objective: 'Draft a full XI from random nations and earn the highest possible tournament finish.',
+      blocks: [
+        {
+          type: 'steps',
+          heading: 'How to play',
+          items: [
+            'Choose one of five random formations to begin.',
+            'A random nation is drawn for each pick. Select one of its players for an open slot.',
+            'Ratings are hidden. Judge each player by club, transfer value and position.',
+            'Fill all eleven slots to receive your World Cup placement.',
+          ],
+        },
+        {
+          type: 'legend',
+          heading: 'Position fit',
+          items: [
+            { swatch: 'green', term: 'Natural', desc: 'The player’s best position.' },
+            { swatch: 'amber', term: 'Out of position', desc: 'Allowed, but limited to three across the XI.' },
+            { swatch: 'red', term: 'Not allowed', desc: 'The player cannot fill that slot.' },
+          ],
+        },
+        {
+          type: 'list',
+          heading: 'Rerolls & scoring',
+          items: [
+            'Two rerolls let you skip a nation you don’t want. The same nation can still appear again.',
+            'Stronger, better-rated squads finish higher. The very best win the title.',
+          ],
+        },
+      ],
+    },
     Component: RoadToWorldCup,
   },
   {
@@ -53,14 +116,38 @@ export const MODES: GameMode[] = [
     tagline: 'A random elite club is drawn each pick. Build a blind XI and chase the European crown.',
     emoji: '⭐',
     accent: '#818cf8',
-    rules: [
-      'Pick 1 of 5 random formations to start.',
-      'A random elite club is drawn each pick — choose one of its players for an open spot.',
-      'You can’t see ratings; pick by player, value and position.',
-      'Position fit: 🟩 natural · 🟨 out of position (max 3) · 🟥 not allowed.',
-      '2 rerolls if you don’t want a club. The same club can come up again.',
-      'Fill all 11 to get your Champions League placement — better players finish higher.',
-    ],
+    rules: {
+      objective: 'Draft a full XI from random elite clubs and earn the highest possible European finish.',
+      blocks: [
+        {
+          type: 'steps',
+          heading: 'How to play',
+          items: [
+            'Choose one of five random formations to begin.',
+            'A random elite club is drawn for each pick. Select one of its players for an open slot.',
+            'Ratings are hidden. Judge each player by reputation, transfer value and position.',
+            'Fill all eleven slots to receive your Champions League placement.',
+          ],
+        },
+        {
+          type: 'legend',
+          heading: 'Position fit',
+          items: [
+            { swatch: 'green', term: 'Natural', desc: 'The player’s best position.' },
+            { swatch: 'amber', term: 'Out of position', desc: 'Allowed, but limited to three across the XI.' },
+            { swatch: 'red', term: 'Not allowed', desc: 'The player cannot fill that slot.' },
+          ],
+        },
+        {
+          type: 'list',
+          heading: 'Rerolls & scoring',
+          items: [
+            'Two rerolls let you skip a club you don’t want. The same club can still appear again.',
+            'Stronger, better-rated squads finish higher. The very best win the trophy.',
+          ],
+        },
+      ],
+    },
     Component: RoadToCL,
   },
   {
@@ -69,15 +156,48 @@ export const MODES: GameMode[] = [
     tagline: 'Six guesses to find the mystery player. Each guess reveals club, nation, position, age, height and value clues.',
     emoji: '🔍',
     accent: '#22d3ee',
-    rules: [
-      'Guess the mystery player in 6 tries — type a name and pick from the list.',
-      'Each guess colours the clues compared to the answer:',
-      'Club — 🟩 same club · 🟨 same league · 🟥 neither',
-      'Nation — 🟩 same · 🟨 same continent (confederation) · 🟥 neither',
-      'Position — 🟩 exact shared position · 🟨 related (e.g. CM≈CDM) · 🟥 neither',
-      'Age / Height / Value — ↑ / ↓ toward the answer, 🟩 if exact (height in feet/inches)',
-      'Win to build a streak; 3+ in a row = on fire 🔥.',
-    ],
+    rules: {
+      objective: 'Identify the mystery player within six guesses.',
+      blocks: [
+        {
+          type: 'steps',
+          heading: 'How to play',
+          items: [
+            'Type a player’s name and choose from the list to lock in a guess.',
+            'Each guess is compared to the answer across seven clues.',
+            'Use the colours and arrows to narrow down who it is.',
+          ],
+        },
+        {
+          type: 'legend',
+          heading: 'Clue colours',
+          items: [
+            { swatch: 'green', term: 'Exact match', desc: 'This detail is identical to the answer.' },
+            { swatch: 'amber', term: 'Close', desc: 'Same league, same continent, or a related position.' },
+            { swatch: 'red', term: 'No match', desc: 'This detail is unrelated to the answer.' },
+          ],
+        },
+        {
+          type: 'list',
+          heading: 'Reading the clues',
+          items: [
+            'Club — green: same club · amber: same league · red: neither.',
+            'Nation — green: same country · amber: same continent · red: neither.',
+            'Position — green: exact · amber: related (e.g. CM and CDM) · red: unrelated.',
+            'Age, Height, Value — an arrow points toward the answer (↑ higher, ↓ lower); green when exact. Height is shown in feet and inches.',
+          ],
+        },
+        {
+          type: 'list',
+          heading: 'Difficulty & streaks',
+          items: [
+            'Futbol Fanatic — the answer can be any player in the database.',
+            'Casual — only the 150 most valuable players are in play.',
+            'Each win extends your streak; three or more in a row marks a hot streak.',
+          ],
+        },
+      ],
+    },
     Component: GuessThePlayer,
   },
 ]
