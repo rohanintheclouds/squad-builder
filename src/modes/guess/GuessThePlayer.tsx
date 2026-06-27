@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { PLAYERS } from '../../data/players'
 import { useMediaQuery } from '../../lib/useMediaQuery'
-import { getStreak, getBestStreak, recordGuessWin, recordGuessLoss, setLastGuessMode, type GuessDiff } from '../../lib/progress'
+import { getStreak, getBestStreak, recordGuessWin, recordGuessLoss, setLastGuessMode, getColorBlind, setColorBlind, type GuessDiff } from '../../lib/progress'
 import { compare, MAX_GUESSES, type Cell, type Color } from './compare'
 import type { Player } from '../../types'
 
@@ -24,15 +24,27 @@ const CELL_BG: Record<Color, string> = {
   red: 'bg-red-500/25 border-red-400/40 text-red-100',
   plain: 'bg-white/5 border-white/10 text-white',
 }
+// Red-green-safe palette: hue AND brightness differ (bright orange > medium blue > dark slate),
+// so the three states are distinguishable for every type of colour blindness.
+const CELL_BG_CB: Record<Color, string> = {
+  green: 'bg-sky-500/40 border-sky-300/70 text-sky-50',
+  yellow: 'bg-orange-500/40 border-orange-300/70 text-orange-50',
+  red: 'bg-slate-700/60 border-slate-400/50 text-slate-200',
+  plain: 'bg-white/5 border-white/10 text-white',
+}
+// In colour-blind mode each categorical cell also carries a glyph, so colour is never the only cue.
+const GLYPH: Record<Color, string> = { green: '✓', yellow: '~', red: '✕', plain: '' }
 
-function Row({ cells, cols }: { cells: Cell[]; cols: string }) {
+function Row({ cells, cols, cb }: { cells: Cell[]; cols: string; cb: boolean }) {
+  const PAL = cb ? CELL_BG_CB : CELL_BG
   return (
     <div className="grid gap-1.5" style={{ gridTemplateColumns: cols }}>
       {cells.map((c, i) => (
         <div
           key={i}
-          className={`flex min-w-0 items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-center text-[13px] font-semibold ${i === 0 ? `sticky left-0 z-10 justify-start !text-left ${c.color === 'green' ? CELL_BG.green : 'border-white/10 bg-[#0e1626]'}` : CELL_BG[c.color]}`}
+          className={`flex min-w-0 items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-center text-[13px] font-semibold ${i === 0 ? `sticky left-0 z-10 justify-start !text-left ${c.color === 'green' ? PAL.green : 'border-white/10 bg-[#0e1626]'}` : PAL[c.color]}`}
         >
+          {cb && i !== 0 && !c.dir && GLYPH[c.color] && <span className="shrink-0 text-[11px] leading-none opacity-90">{GLYPH[c.color]}</span>}
           <span className="truncate">{c.value}</span>
           {c.dir && <span className="shrink-0 text-base leading-none">{c.dir === 'up' ? '↑' : '↓'}</span>}
         </div>
@@ -47,6 +59,8 @@ export default function GuessThePlayer({ onExit }: { onExit: () => void }) {
   const [guesses, setGuesses] = useState<Player[]>([])
   const [query, setQuery] = useState('')
   const [streak, setStreak] = useState(0)
+  const [cb, setCb] = useState(getColorBlind())
+  const toggleCb = () => setCb((v) => { setColorBlind(!v); return !v })
   const isMobile = useMediaQuery('(max-width: 640px)')
   const cols = isMobile ? MOBILE_COLS : DESKTOP_COLS
   const pool = difficulty ? poolFor(difficulty) : PLAYERS
@@ -100,6 +114,17 @@ export default function GuessThePlayer({ onExit }: { onExit: () => void }) {
           <Card d="hard" emoji="🧠" title="Futbol Fanatic" blurb={`Hard mode — the mystery player can be ANY of the ${PLAYERS.length} players in the database.`} />
           <Card d="casual" emoji="🌥️" title="Casual Play" blurb={`Easier — only the top ${CASUAL_SIZE} players (the elite, most recognisable names) are in play.`} />
         </div>
+        <button
+          onClick={toggleCb}
+          aria-pressed={cb}
+          className="mt-6 flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm font-semibold text-white/75 transition hover:bg-white/10"
+        >
+          <span className={`flex h-5 w-9 items-center rounded-full px-0.5 transition ${cb ? 'justify-end bg-sky-500' : 'justify-start bg-white/20'}`}>
+            <span className="h-4 w-4 rounded-full bg-white shadow" />
+          </span>
+          Colour-blind mode {cb ? 'on' : 'off'}
+          <span className="text-xs font-normal text-white/40">· red-green-safe clue colours</span>
+        </button>
       </div>
     )
   }
@@ -132,6 +157,14 @@ export default function GuessThePlayer({ onExit }: { onExit: () => void }) {
             </div>
           )}
         </div>
+        <button
+          onClick={toggleCb}
+          aria-pressed={cb}
+          title="Colour-blind mode (red-green-safe clue colours)"
+          className={`flex h-[42px] shrink-0 items-center rounded-lg border px-2.5 text-sm font-black transition ${cb ? 'border-sky-400/60 bg-sky-500/20 text-sky-200' : 'border-white/10 bg-white/5 text-white/45 hover:text-white/70'}`}
+        >
+          ◐
+        </button>
         <div className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center text-xs">
           <div className="text-[10px] uppercase tracking-wide text-white/40">{difficulty === 'hard' ? 'Fanatic' : 'Casual'} streak</div>
           <div className="font-bold text-white">{streak}{streak >= 3 ? ' 🔥' : ''}</div>
@@ -148,7 +181,7 @@ export default function GuessThePlayer({ onExit }: { onExit: () => void }) {
               ))}
             </div>
             <div className="flex flex-col gap-1.5">
-              {guesses.map((g, i) => <Row key={i} cells={compare(g, target)} cols={cols} />)}
+              {guesses.map((g, i) => <Row key={i} cells={compare(g, target)} cols={cols} cb={cb} />)}
               {!done && Array.from({ length: MAX_GUESSES - guesses.length }, (_, i) => (
                 <div key={i} className="grid gap-1.5" style={{ gridTemplateColumns: cols }}>
                   <div className="col-span-full rounded-lg border border-dashed border-white/10 py-2.5 text-center text-xs text-white/30">

@@ -194,6 +194,7 @@ export const MODES: GameMode[] = [
             '**Futbol Fanatic** — the answer can be any player in the database.',
             '**Casual** — only the elite, most recognisable players (the top ~160, rated 81+) are in play.',
             'Each win **extends your streak**; three or more in a row marks a **hot streak**.',
+            '**Colour-blind mode** — toggle a red-green-safe palette (blue / orange / dark, with ✓ ~ ✕ marks) from the start screen or the ◐ button.',
           ],
         },
       ],

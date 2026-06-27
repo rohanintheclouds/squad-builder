@@ -31,3 +31,7 @@ export function recordGuessWin(d: GuessDiff): number {
 export function recordGuessLoss(d: GuessDiff) { lsSet(sKey(d), '0') }
 export const getLastGuessMode = (): GuessDiff | null => (lsGet('squadlab-gtp-last') as GuessDiff | null) || null
 export const setLastGuessMode = (d: GuessDiff) => lsSet('squadlab-gtp-last', d)
+
+// Colour-blind mode: swaps the green/yellow/red clue palette for a red-green-safe one.
+export const getColorBlind = (): boolean => lsGet('squadlab-colorblind') === '1'
+export const setColorBlind = (on: boolean) => lsSet('squadlab-colorblind', on ? '1' : '0')
