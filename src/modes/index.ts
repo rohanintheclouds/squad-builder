@@ -181,10 +181,10 @@ export const MODES: GameMode[] = [
           type: 'list',
           heading: 'Reading the clues',
           items: [
-            '**Club** — green: same club · amber: same league · red: neither.',
-            '**Nation** — green: same country · amber: same continent · red: neither.',
-            '**Position** — green: exact · amber: related (e.g. CM and CDM) · red: unrelated.',
-            '**Age, Height, Value** — an arrow points toward the answer (↑ higher, ↓ lower); green when exact. Height is shown in feet and inches.',
+            '**Club** — green: **same club** · amber: **same league** · red: neither.',
+            '**Nationality** — green: **same country** · amber: **same continent** · red: neither.',
+            '**Position** — green: **exact position** · amber: **related** (e.g. CM and CDM) · red: unrelated.',
+            '**Age, Height & Value** — an arrow points toward the answer (**↑ higher**, **↓ lower**); green when **exact**. Height is shown in feet and inches.',
           ],
         },
         {
