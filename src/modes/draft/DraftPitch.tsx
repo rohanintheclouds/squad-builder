@@ -1,4 +1,4 @@
-import { byId, validSlotsFor, type Draft } from './engine'
+import { byId, validSlotsFor, primaryMoveTargets, type Draft } from './engine'
 import { FORMATIONS } from '../../data/formations'
 import { eligibilityStrict as eligibility } from '../../lib/positions'
 import PitchMarkings from '../../components/PitchMarkings'
@@ -7,11 +7,15 @@ import PlayerCard from '../../components/PlayerCard'
 const HEX = 'polygon(50% 1%, 95% 25%, 95% 75%, 50% 99%, 5% 75%, 5% 25%)'
 
 export default function DraftPitch({ draft, compact = false }: { draft: Draft; compact?: boolean }) {
-  const { formationName, lineup, selectedPlayerId, selectedSlotId, selectSlot, place } = draft.useStore()
+  const { formationName, lineup, selectedPlayerId, selectedSlotId, selectSlot, place, movingSlotId, pickUpPlaced, movePlaced } = draft.useStore()
   if (!formationName) return null
   const formation = FORMATIONS.find((f) => f.name === formationName)!
   const selected = selectedPlayerId ? byId.get(selectedPlayerId) : undefined
   const validSlots = selected ? new Set(validSlotsFor(selected, lineup, formationName)) : new Set<string>()
+  // A placed player picked up to relocate, and the empty slots he may move into (primary pos only).
+  const moving = movingSlotId ? byId.get(lineup[movingSlotId]) : undefined
+  const moveTargets = moving ? new Set(primaryMoveTargets(moving, lineup, formationName)) : new Set<string>()
+  const movingLast = moving?.name.split(' ').slice(-1)[0]
   const scale = compact ? 0.72 : 1
 
   return (
@@ -27,17 +31,28 @@ export default function DraftPitch({ draft, compact = false }: { draft: Draft; c
           const pid = lineup[slot.id]
           const player = pid ? byId.get(pid) : undefined
           const isPlaceTarget = selected ? validSlots.has(slot.id) : false
+          const isMoveTarget = moving ? moveTargets.has(slot.id) : false
           const isSelectedSlot = selectedSlotId === slot.id
-          const highlight = isPlaceTarget || isSelectedSlot
+          const isMovingSelf = movingSlotId === slot.id
+          const highlight = isPlaceTarget || isSelectedSlot || isMoveTarget
           return (
             <div key={slot.id} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${slot.x}%`, top: `${slot.y}%` }}>
               <div style={{ transform: `scale(${scale})` }}>
                 {player ? (
-                  <PlayerCard player={player} slotType={slot.type} eligibility={eligibility(player, slot.type)} />
+                  <button
+                    onClick={() => pickUpPlaced(slot.id)}
+                    title="Tap to move this player to an open spot in his natural position"
+                    className={`block cursor-pointer rounded-[15px] transition ${isMovingSelf ? 'ring-2 ring-sky-300' : 'hover:-translate-y-0.5'}`}
+                  >
+                    <PlayerCard player={player} slotType={slot.type} eligibility={eligibility(player, slot.type)} dimmed={!!moving && !isMovingSelf} />
+                  </button>
                 ) : (
                   <button
                     onClick={() => {
-                      if (isPlaceTarget && selected) place(selected.id, slot.id)
+                      if (moving) {
+                        if (isMoveTarget) movePlaced(slot.id)
+                        else pickUpPlaced(null) // tap empty space elsewhere to cancel the move
+                      } else if (isPlaceTarget && selected) place(selected.id, slot.id)
                       else selectSlot(isSelectedSlot ? null : slot.id)
                     }}
                     className="group relative flex h-[88px] w-[78px] cursor-pointer items-center justify-center"
@@ -46,7 +61,7 @@ export default function DraftPitch({ draft, compact = false }: { draft: Draft; c
                       style={{ clipPath: HEX, background: highlight ? '#38bdf8' : 'rgba(56,189,248,0.5)' }} />
                     <span className="absolute inset-[2px] flex items-center justify-center"
                       style={{ clipPath: HEX, background: 'linear-gradient(160deg, rgba(20,28,38,0.95), rgba(10,15,21,0.95))' }}>
-                      <span className={`text-lg font-light ${highlight ? 'text-blue-300' : 'text-emerald-300/80'}`}>{isPlaceTarget ? '↓' : '+'}</span>
+                      <span className={`text-lg font-light ${highlight ? 'text-blue-300' : 'text-emerald-300/80'}`}>{isPlaceTarget || isMoveTarget ? '↓' : '+'}</span>
                     </span>
                     <span className="absolute -bottom-1.5 rounded px-1.5 text-[10px] font-bold tracking-wide text-white/90"
                       style={{ background: isSelectedSlot ? '#0891b2' : 'rgba(0,0,0,0.7)' }}>{slot.type}</span>
@@ -57,6 +72,14 @@ export default function DraftPitch({ draft, compact = false }: { draft: Draft; c
           )
         })}
       </div>
+
+      {moving && (
+        <div className="pointer-events-none absolute left-1/2 top-3 z-20 -translate-x-1/2 whitespace-nowrap rounded-full border border-sky-300/40 bg-sky-500/25 px-3 py-1 text-xs font-semibold text-sky-50 backdrop-blur-md">
+          {moveTargets.size > 0
+            ? `Moving ${movingLast} — tap an open ${moving.primaryPos} spot`
+            : `No open ${moving.primaryPos} spot for ${movingLast} — tap him again to cancel`}
+        </div>
+      )}
 
       <div className="pointer-events-none absolute bottom-3 left-5 z-10 text-2xl font-black italic text-white/85 drop-shadow">{formationName}</div>
     </div>

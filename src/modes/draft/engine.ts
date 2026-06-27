@@ -42,6 +42,17 @@ export function validSlotsFor(player: Player, lineup: Record<string, string>, fo
     .map((s) => s.id)
 }
 
+/**
+ * Empty slots a player ALREADY on the pitch may be moved into. Unlike the initial placement
+ * (which allows natural interchanges and capped amber), a move is restricted to the player's
+ * PRIMARY position only — so an LW placed at LM can later be moved to LW, but not the reverse.
+ */
+export function primaryMoveTargets(player: Player, lineup: Record<string, string>, formationName: string): string[] {
+  return slots(formationName)
+    .filter((s) => !lineup[s.id] && s.type === player.primaryPos)
+    .map((s) => s.id)
+}
+
 /** Free agents (any club/nation) under EMERGENCY_MAX that can fill an open slot right now. */
 export function emergencyPlayers(lineup: Record<string, string>, pickedIds: string[], formationName: string): Player[] {
   const picked = new Set(pickedIds)
@@ -75,12 +86,16 @@ export type DraftState = {
   skips: Record<string, number>
   selectedPlayerId: string | null
   selectedSlotId: string | null
+  /** A player already on the pitch, picked up to be moved to his primary position. */
+  movingSlotId: string | null
 
   start: () => void
   chooseFormation: (name: string) => void
   selectPlayer: (id: string | null) => void
   selectSlot: (slotId: string | null) => void
   place: (playerId: string, slotId: string) => void
+  pickUpPlaced: (slotId: string | null) => void
+  movePlaced: (toSlotId: string) => void
   reroll: () => void
 }
 
@@ -148,18 +163,19 @@ export function createDraft(config: DraftConfig): Draft {
     skips: {},
     selectedPlayerId: null,
     selectedSlotId: null,
+    movingSlotId: null,
 
     start: () =>
       set({
         phase: 'formation', formationChoices: freshChoices(), formationName: null,
-        lineup: {}, pickedIds: [], group: null, emergency: false, rerollsLeft: REROLLS, skips: {}, selectedPlayerId: null, selectedSlotId: null,
+        lineup: {}, pickedIds: [], group: null, emergency: false, rerollsLeft: REROLLS, skips: {}, selectedPlayerId: null, selectedSlotId: null, movingSlotId: null,
       }),
 
     chooseFormation: (name) =>
-      set({ formationName: name, phase: 'draft', group: pickGroup({}, [], name, {}), emergency: false, rerollsLeft: REROLLS, skips: {}, selectedPlayerId: null, selectedSlotId: null }),
+      set({ formationName: name, phase: 'draft', group: pickGroup({}, [], name, {}), emergency: false, rerollsLeft: REROLLS, skips: {}, selectedPlayerId: null, selectedSlotId: null, movingSlotId: null }),
 
-    selectPlayer: (id) => set({ selectedPlayerId: id, selectedSlotId: null }),
-    selectSlot: (slotId) => set({ selectedSlotId: slotId, selectedPlayerId: null }),
+    selectPlayer: (id) => set({ selectedPlayerId: id, selectedSlotId: null, movingSlotId: null }),
+    selectSlot: (slotId) => set({ selectedSlotId: slotId, selectedPlayerId: null, movingSlotId: null }),
 
     place: (playerId, slotId) => {
       const { lineup, formationName, pickedIds, skips } = get()
@@ -169,16 +185,42 @@ export function createDraft(config: DraftConfig): Draft {
       const nextLineup = { ...lineup, [slotId]: playerId }
       const nextPicked = [...pickedIds, playerId]
       if (Object.keys(nextLineup).length >= slots(formationName).length) {
-        set({ lineup: nextLineup, pickedIds: nextPicked, selectedPlayerId: null, selectedSlotId: null, group: null, emergency: false, phase: 'result' })
+        set({ lineup: nextLineup, pickedIds: nextPicked, selectedPlayerId: null, selectedSlotId: null, movingSlotId: null, group: null, emergency: false, phase: 'result' })
         return
       }
       // If no pooled group can fill a remaining slot, drop into emergency (free-agent) mode
       // instead of getting stuck or drawing from outside the pool.
       const next = pickGroup(nextLineup, nextPicked, formationName, skips)
       set({
-        lineup: nextLineup, pickedIds: nextPicked, selectedPlayerId: null, selectedSlotId: null,
+        lineup: nextLineup, pickedIds: nextPicked, selectedPlayerId: null, selectedSlotId: null, movingSlotId: null,
         group: next, emergency: next === null,
       })
+    },
+
+    // Pick up / put down a player already on the pitch to relocate him (toggle).
+    pickUpPlaced: (slotId) =>
+      set((s) => ({ movingSlotId: s.movingSlotId === slotId ? null : slotId, selectedPlayerId: null, selectedSlotId: null })),
+
+    // Move a picked-up player into an empty slot of his PRIMARY position. Frees his old slot;
+    // the squad count is unchanged, so this never completes the draft. The current draw is kept
+    // unless the move left it unable to fill any open slot (then re-pick / recover from emergency).
+    movePlaced: (toSlotId) => {
+      const { movingSlotId, lineup, formationName, pickedIds, skips, group, emergency } = get()
+      if (!movingSlotId || !formationName) return
+      const playerId = lineup[movingSlotId]
+      const player = playerId ? byId.get(playerId) : undefined
+      if (!player || !primaryMoveTargets(player, lineup, formationName).includes(toSlotId)) return
+      const nextLineup = { ...lineup }
+      delete nextLineup[movingSlotId]
+      nextLineup[toSlotId] = playerId
+      let nextGroup = group
+      let nextEmergency = emergency
+      const groupStillOk = !emergency && !!group && groupUsable(group, nextLineup, pickedIds, formationName)
+      if (!groupStillOk) {
+        nextGroup = pickGroup(nextLineup, pickedIds, formationName, skips)
+        nextEmergency = nextGroup === null
+      }
+      set({ lineup: nextLineup, movingSlotId: null, selectedPlayerId: null, selectedSlotId: null, group: nextGroup, emergency: nextEmergency })
     },
 
     // Manual reroll: skip the current group for a different usable one (2 per game).
@@ -189,7 +231,7 @@ export function createDraft(config: DraftConfig): Draft {
       const others = pool.filter((g) => g !== group && groupUsable(g, lineup, pickedIds, formationName))
       if (!others.length) return // nothing else to roll to
       const nextSkips = { ...skips, [group]: (skips[group] ?? 0) + 1 }
-      set({ rerollsLeft: rerollsLeft - 1, skips: nextSkips, group: weightedPick(others, nextSkips), selectedPlayerId: null, selectedSlotId: null })
+      set({ rerollsLeft: rerollsLeft - 1, skips: nextSkips, group: weightedPick(others, nextSkips), selectedPlayerId: null, selectedSlotId: null, movingSlotId: null })
     },
   }))
 
