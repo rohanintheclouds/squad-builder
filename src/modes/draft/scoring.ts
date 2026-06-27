@@ -1,12 +1,30 @@
 import { PLAYERS } from '../../data/players'
 
 // Draft scoring uses each player's hidden rating (see src/data/ratings.ts).
-// Calibrated by Monte-Carlo to the current ratings: casual play averages ~76.7, expert ~79.7.
-// Centering here puts an average team at Round of 16 and makes the top tier genuinely rare.
-const MEAN = 77
-const TEAM_SD = 2.8
+// The team score is BALANCE-AWARE: the average rating minus a penalty for how uneven the squad is
+// (0.7 × standard deviation), so a few superstars can't carry a weak supporting cast. Calibrated by
+// Monte-Carlo over strong (greedy) drafts — see scripts/sim-scoring.mjs — so a typical good team
+// lands mid-table and a genuinely balanced elite squad wins ~1.5% of the time. CL skews a touch
+// stronger than the World Cup, hence the separate centre.
+const SPREAD_WEIGHT = 0.7
+const CALIBRATION: Record<string, { mean: number; sd: number }> = {
+  wc: { mean: 78.0, sd: 1.9 },
+  cl: { mean: 78.7, sd: 1.8 },
+}
 
 const byId = new Map(PLAYERS.map((p) => [p.id, p]))
+
+/**
+ * Balance-aware squad score: average rating minus 0.7 × the spread (standard deviation) of the XI.
+ * A top-heavy team is dragged down by its unevenness, so depth across all 11 positions matters and
+ * one elite player is worth less at the margin (he raises the average but also the spread).
+ */
+function squadScore(ratings: number[]): number {
+  if (!ratings.length) return 0
+  const mean = ratings.reduce((a, b) => a + b, 0) / ratings.length
+  const variance = ratings.reduce((a, r) => a + (r - mean) ** 2, 0) / ratings.length
+  return mean - SPREAD_WEIGHT * Math.sqrt(variance)
+}
 
 function normalCdf(z: number): number {
   const t = 1 / (1 + 0.2316419 * Math.abs(z))
@@ -40,11 +58,12 @@ export const CL_TIERS: Tier[] = [
   { key: 'none', label: 'Missed Europe', blurb: 'Bottom 3%. No European football.', color: '#ef4444', minPercentile: 0 },
 ]
 
-export function scoreTeam(playerIds: string[], tiers: Tier[]): { avg: number; percentile: number; tier: Tier } {
+export function scoreTeam(playerIds: string[], tiers: Tier[], modeId = 'wc'): { avg: number; percentile: number; tier: Tier } {
   const ratings = playerIds.map((id) => byId.get(id)).filter(Boolean).map((p) => p!.rating)
-  const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
-  const z = TEAM_SD > 0 ? (avg - MEAN) / TEAM_SD : 0
+  const score = squadScore(ratings)
+  const cal = CALIBRATION[modeId] ?? CALIBRATION.wc
+  const z = cal.sd > 0 ? (score - cal.mean) / cal.sd : 0
   const percentile = normalCdf(z)
   const tier = tiers.find((t) => percentile >= t.minPercentile) ?? tiers[tiers.length - 1]
-  return { avg, percentile, tier }
+  return { avg: score, percentile, tier }
 }

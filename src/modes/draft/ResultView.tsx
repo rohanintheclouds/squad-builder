@@ -9,7 +9,7 @@ import PlayerCard from '../../components/PlayerCard'
 export default function ResultView({ draft, onExit }: { draft: Draft; onExit: () => void }) {
   const { pickedIds, lineup, formationName, start } = draft.useStore()
   const tiers = draft.config.tiers
-  const { avg, percentile, tier } = scoreTeam(pickedIds, tiers)
+  const { avg, percentile, tier } = scoreTeam(pickedIds, tiers, draft.config.id)
   const topPct = Math.max(1, Math.round((1 - percentile) * 100))
   const formation = formationName ? FORMATIONS.find((f) => f.name === formationName)! : null
 
