@@ -11,6 +11,15 @@ function SectionHeading({ children }: { children: string }) {
   return <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white/40">{children}</h3>
 }
 
+// Render lightweight **bold** spans inline so key terms in each instruction stand out.
+function inline(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={i} className="font-semibold text-white">{part.slice(2, -2)}</strong>
+      : part,
+  )
+}
+
 function Block({ block }: { block: RuleBlock }) {
   if (block.type === 'steps') {
     return (
@@ -22,7 +31,7 @@ function Block({ block }: { block: RuleBlock }) {
               <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold text-white/80">
                 {i + 1}
               </span>
-              <span className="text-[13px] leading-relaxed text-white/80">{item}</span>
+              <span className="text-[13px] leading-relaxed text-white/80">{inline(item)}</span>
             </li>
           ))}
         </ol>
@@ -56,7 +65,7 @@ function Block({ block }: { block: RuleBlock }) {
         {block.items.map((item, i) => (
           <li key={i} className="flex gap-3">
             <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-white/35" />
-            <span className="text-[13px] leading-relaxed text-white/80">{item}</span>
+            <span className="text-[13px] leading-relaxed text-white/80">{inline(item)}</span>
           </li>
         ))}
       </ul>
