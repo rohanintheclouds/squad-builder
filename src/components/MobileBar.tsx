@@ -21,7 +21,7 @@ export default function MobileBar() {
   const pct = Math.min(100, budgetCap > 0 ? (spent / budgetCap) * 100 : 0)
   const filled = entries.length
   const total = FORMATIONS.find((f) => f.name === formationName)!.slots.length
-  const { rating: teamRtg, avgAge } = teamRating(entries.map((e) => e.playerId))
+  const { rating: teamRtg, avgAge } = teamRating(lineup, formationName)
 
   return (
     <div className="glass border-b border-white/10 px-3 pb-2 pt-2.5">

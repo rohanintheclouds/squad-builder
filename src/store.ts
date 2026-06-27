@@ -2,9 +2,7 @@ import { create } from 'zustand'
 import { FORMATIONS } from './data/formations'
 import { TACTICS } from './data/tactics'
 import { MANAGER_PLAYERS as PLAYERS } from './data/players'
-import { eligibility } from './lib/positions'
-import { AMBER_LIMIT, amberCount, slotTypeMap, lastName } from './lib/squad'
-import type { Position, SquadEntry } from './types'
+import type { SquadEntry } from './types'
 
 const playerById = new Map(PLAYERS.map((p) => [p.id, p]))
 
@@ -52,16 +50,12 @@ export const useStore = create<State>((set) => ({
   setBudget: (cap) => set({ budgetCap: Math.max(0, cap) }),
   selectSlot: (slotId) => set({ selectedSlotId: slotId }),
 
+  // Any player can be placed in any slot. Out-of-position players are allowed; they just take a
+  // rating penalty (see oopInfo/teamRating) and show an "out of position" callout on the pitch.
   assignPlayer: (slotId, playerId) =>
     set((s) => {
-      const type = slotTypeMap(s.formationName).get(slotId) as Position | undefined
       const p = playerById.get(playerId)
-      if (!type || !p) return s
-      const elig = eligibility(p, type)
-      if (elig === 'red') return { notice: `${lastName(p.name)} can't play ${type}.` }
-      if (elig === 'amber' && amberCount(s.lineup, s.formationName, slotId) >= AMBER_LIMIT)
-        return { notice: `Max ${AMBER_LIMIT} out-of-position players. Free one up first.` }
-
+      if (!p) return s
       const lineup = { ...s.lineup }
       for (const [sid, entry] of Object.entries(lineup)) {
         if (entry.playerId === playerId) delete lineup[sid]
@@ -87,21 +81,7 @@ export const useStore = create<State>((set) => ({
       else delete lineup[a]
       if (ea) lineup[b] = ea
       else delete lineup[b]
-
-      // Reject the swap if it would drop a player into a position they can't play,
-      // or push the squad past the out-of-position cap.
-      const types = slotTypeMap(s.formationName)
-      for (const slotId of [a, b]) {
-        const entry = lineup[slotId]
-        if (!entry) continue
-        const p = playerById.get(entry.playerId)
-        const type = types.get(slotId) as Position | undefined
-        if (p && type && eligibility(p, type) === 'red')
-          return { notice: `${lastName(p.name)} can't play ${type}.` }
-      }
-      if (amberCount(lineup, s.formationName) > AMBER_LIMIT)
-        return { notice: `Max ${AMBER_LIMIT} out-of-position players.` }
-
+      // Swaps are always allowed; any resulting out-of-position players just take a rating penalty.
       return { lineup, notice: null }
     }),
 

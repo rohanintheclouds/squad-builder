@@ -22,7 +22,7 @@ export default function Toolbar() {
   const entries = Object.values(lineup)
   const filled = entries.length
   const total = FORMATIONS.find((f) => f.name === formationName)!.slots.length
-  const { rating: teamRtg, avgAge } = teamRating(entries.map((e) => e.playerId))
+  const { rating: teamRtg, avgAge } = teamRating(lineup, formationName)
   const stars = Math.min(5, Math.round(teamRtg / 20))
 
   return (

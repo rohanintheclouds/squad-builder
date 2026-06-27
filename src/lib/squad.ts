@@ -1,9 +1,9 @@
 import { FORMATIONS } from '../data/formations'
 import { MANAGER_PLAYERS as PLAYERS } from '../data/players'
-import { eligibility } from './positions'
-import type { Eligibility, SquadEntry } from '../types'
+import { eligibility, oopSeverity } from './positions'
+import type { Eligibility, Position, SquadEntry } from '../types'
 
-/** How many "amber" (partially out of position) players a squad may field. */
+/** Amber (out-of-position-but-plausible) players beyond this count start taking a rating penalty. */
 export const AMBER_LIMIT = 3
 
 const playerById = new Map(PLAYERS.map((p) => [p.id, p]))
@@ -36,15 +36,49 @@ export function amberCount(lineup: Record<string, SquadEntry>, formationName: st
 
 export const lastName = (full: string) => full.split(' ').slice(-1)[0]
 
+export type SlotOop = { elig: Eligibility; penalty: number }
+
+/**
+ * Per-slot out-of-position status + rating penalty for the current lineup. Any player can be
+ * placed anywhere now: green is free; the first AMBER_LIMIT amber players are free; every amber
+ * beyond that (in placement order) takes its severity penalty; red players always take theirs.
+ * Penalty scales with how outlandish the move is (LM→LB tiny, ST→CB big, ST→GK brutal).
+ */
+export function oopInfo(lineup: Record<string, SquadEntry>, formationName: string): Record<string, SlotOop> {
+  const types = slotTypeMap(formationName)
+  const out: Record<string, SlotOop> = {}
+  let amberSeen = 0
+  // Object key order = placement order, so "after the 3rd amber added" is well defined.
+  for (const [slotId, entry] of Object.entries(lineup)) {
+    const p = playerById.get(entry.playerId)
+    const type = types.get(slotId) as Position | undefined
+    if (!p || !type) continue
+    const elig = eligibility(p, type)
+    let penalty = 0
+    if (elig === 'amber') {
+      amberSeen++
+      if (amberSeen > AMBER_LIMIT) penalty = oopSeverity(p, type)
+    } else if (elig === 'red') {
+      penalty = oopSeverity(p, type)
+    }
+    out[slotId] = { elig, penalty }
+  }
+  return out
+}
+
 /**
  * Squad Builder team rating (shown at the top). Future-aware: blends current ability with
- * potential and penalises an old average age, so you can't stack cheap veterans for a top team.
+ * potential, penalises an old average age, and now docks each out-of-position player by its
+ * positional penalty (see oopInfo), so a striker shoved to CB drags the whole side down.
  */
-export function teamRating(playerIds: string[]): { rating: number; avgAge: number } {
-  const ps = playerIds.map((id) => playerById.get(id)).filter(Boolean) as { rating: number; potential: number; age: number }[]
-  if (!ps.length) return { rating: 0, avgAge: 0 }
-  const future = ps.reduce((a, p) => a + 0.5 * p.rating + 0.5 * p.potential, 0) / ps.length
-  const avgAge = ps.reduce((a, p) => a + p.age, 0) / ps.length
+export function teamRating(lineup: Record<string, SquadEntry>, formationName: string): { rating: number; avgAge: number } {
+  const info = oopInfo(lineup, formationName)
+  const placed = Object.entries(lineup)
+    .map(([slotId, e]) => ({ slotId, p: playerById.get(e.playerId) }))
+    .filter((x) => x.p) as { slotId: string; p: { rating: number; potential: number; age: number } }[]
+  if (!placed.length) return { rating: 0, avgAge: 0 }
+  const future = placed.reduce((a, x) => a + 0.5 * x.p.rating + 0.5 * x.p.potential - (info[x.slotId]?.penalty ?? 0), 0) / placed.length
+  const avgAge = placed.reduce((a, x) => a + x.p.age, 0) / placed.length
   const agePenalty = Math.max(0, (avgAge - 29) * 1.2)
   return { rating: Math.round(future - agePenalty), avgAge: Math.round(avgAge) }
 }

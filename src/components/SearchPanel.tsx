@@ -4,8 +4,7 @@ import { useStore } from '../store'
 import { MANAGER_PLAYERS as PLAYERS } from '../data/players'
 import { FORMATIONS } from '../data/formations'
 import { TACTICS } from '../data/tactics'
-import { eligibility, ELIGIBILITY_COLOR } from '../lib/positions'
-import { amberCount, AMBER_LIMIT } from '../lib/squad'
+import { eligibility, oopSeverity, ELIGIBILITY_COLOR } from '../lib/positions'
 import { fmtValue } from '../lib/format'
 import { tierBadge } from '../lib/tier'
 import { flag } from '../lib/flags'
@@ -14,28 +13,29 @@ import type { Player, Position } from '../types'
 const ALL_POS: Position[] = ['GK','RB','RWB','CB','LB','LWB','CDM','CM','CAM','RM','LM','RW','LW','CF','ST']
 const LEAGUES = Array.from(new Set(PLAYERS.map((p) => p.league))).sort()
 
-function Row({ player, eligColor, already, tooPricey, clickable, blocked, draggable, onAssign }: {
+function Row({ player, eligColor, already, tooPricey, clickable, penalty, oop, draggable, onAssign }: {
   player: Player
   eligColor?: string
   already: boolean
   tooPricey: boolean
   clickable: boolean
-  blocked: boolean
+  /** Worst-case rating penalty if placed out of position here (0 = natural fit). */
+  penalty: number
+  oop?: 'amber' | 'red'
   draggable: boolean
   onAssign: () => void
 }) {
-  const { setNodeRef, listeners, attributes, isDragging } = useDraggable({ id: `search:${player.id}`, disabled: blocked || !draggable })
-  const canClick = clickable && !blocked
-  const dragProps = draggable && !blocked ? { ...listeners, ...attributes } : {}
+  const { setNodeRef, listeners, attributes, isDragging } = useDraggable({ id: `search:${player.id}`, disabled: !draggable })
+  const dragProps = draggable ? { ...listeners, ...attributes } : {}
   return (
     <div
       ref={setNodeRef}
       {...dragProps}
-      onClick={() => canClick && onAssign()}
+      onClick={() => clickable && onAssign()}
       className={`flex items-center gap-2.5 border-b border-white/5 px-3 py-2 text-left transition
         ${isDragging ? 'opacity-40' : ''}
-        ${blocked ? 'cursor-not-allowed opacity-45' : canClick ? `${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} hover:bg-blue-500/10` : draggable ? 'cursor-grab' : 'cursor-default'}
-        ${already && !blocked ? 'opacity-45' : ''}`}
+        ${clickable ? `${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} hover:bg-blue-500/10` : draggable ? 'cursor-grab' : 'cursor-default'}
+        ${already ? 'opacity-45' : ''}`}
     >
       {eligColor && <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: eligColor }} />}
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[11px] font-black shadow" style={tierBadge(player.rating)}>
@@ -52,8 +52,10 @@ function Row({ player, eligColor, already, tooPricey, clickable, blocked, dragga
       </span>
       <span className="shrink-0 text-right">
         <span className={`block text-sm font-bold ${tooPricey ? 'text-red-400' : 'text-emerald-300'}`}>{fmtValue(player.value)}</span>
-        {blocked ? (
-          <span className="block text-[10px] font-medium text-amber-300">OOP limit</span>
+        {oop === 'red' ? (
+          <span className="block text-[10px] font-bold text-red-300">out of pos{penalty > 0 ? ` −${penalty}` : ''}</span>
+        ) : oop === 'amber' ? (
+          <span className="block text-[10px] font-medium text-amber-300/80">out of pos</span>
         ) : already ? (
           <span className="block text-[10px] text-white/40">in squad</span>
         ) : null}
@@ -83,8 +85,6 @@ export default function SearchPanel({ draggable = true, onAfterAssign }: { dragg
   const remaining = budgetCap - spent + slotOccupantValue
 
   const inLineup = useMemo(() => new Set(Object.values(lineup).map((e) => e.playerId)), [lineup])
-  // Amber players already fielded, ignoring the slot we're filling (a swap keeps the count flat).
-  const amberAtLimit = amberCount(lineup, formationName, selectedSlotId ?? undefined) >= AMBER_LIMIT
 
   const rows = useMemo(() => {
     let list: Player[] = PLAYERS.filter((p) => {
@@ -97,17 +97,18 @@ export default function SearchPanel({ draggable = true, onAfterAssign }: { dragg
 
     if (selectedSlot) {
       const slotType = selectedSlot.type
+      // Every player is selectable now; natural fits float to the top, out-of-position players
+      // (which take a rating penalty) sort lower the more outlandish the move is.
       list = list
         .map((p) => {
           const elig = eligibility(p, slotType)
-          let score = elig === 'green' ? 3 : elig === 'amber' ? 1 : -100
+          let score = elig === 'green' ? 3 : elig === 'amber' ? 1 : -2 - oopSeverity(p, slotType) / 10
           if (tactic.emphasis.includes(p.primaryPos)) score += 1.5
           else if (p.eligiblePos.some((pos) => tactic.emphasis.includes(pos))) score += 0.5
           score += p.rating / 50
           if ((p.value ?? 0) > remaining) score -= 2
-          return { p, elig, score }
+          return { p, score }
         })
-        .filter((r) => r.elig !== 'red')
         .sort((a, b) => b.score - a.score)
         .map((r) => r.p)
     } else {
@@ -169,7 +170,8 @@ export default function SearchPanel({ draggable = true, onAfterAssign }: { dragg
               already={inLineup.has(p.id)}
               tooPricey={selectedSlot ? (p.value ?? 0) > remaining : false}
               clickable={!!selectedSlot}
-              blocked={elig === 'amber' && amberAtLimit && lineup[selectedSlot!.id]?.playerId !== p.id}
+              oop={elig === 'amber' || elig === 'red' ? elig : undefined}
+              penalty={selectedSlot ? oopSeverity(p, selectedSlot.type) : 0}
               draggable={draggable}
               onAssign={() => {
                 if (!selectedSlot) return

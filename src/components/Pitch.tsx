@@ -4,7 +4,7 @@ import { useStore } from '../store'
 import { FORMATIONS } from '../data/formations'
 import { MANAGER_PLAYERS as PLAYERS } from '../data/players'
 import { eligibility } from '../lib/positions'
-import { amberCount, AMBER_LIMIT } from '../lib/squad'
+import { oopInfo } from '../lib/squad'
 import type { FormationSlot, Position } from '../types'
 import PlayerCard from './PlayerCard'
 import PitchMarkings from './PitchMarkings'
@@ -13,11 +13,13 @@ import RoleModal from './RoleModal'
 const byId = new Map(PLAYERS.map((p) => [p.id, p]))
 const HEX = 'polygon(50% 1%, 95% 25%, 95% 75%, 50% 99%, 5% 75%, 5% 25%)'
 
-function Slot({ slot, onEditRole, compact, draggable }: {
+function Slot({ slot, onEditRole, compact, draggable, penalty }: {
   slot: FormationSlot
   onEditRole: (slotId: string, pos: Position) => void
   compact: boolean
   draggable: boolean
+  /** Rating penalty this out-of-position player currently incurs (0 = none yet / natural). */
+  penalty: number
 }) {
   const { lineup, selectedSlotId, selectSlot, removeFromSlot } = useStore()
   const entry = lineup[slot.id]
@@ -59,6 +61,14 @@ function Slot({ slot, onEditRole, compact, draggable }: {
             >
               ×
             </span>
+            {(elig === 'amber' || elig === 'red') && (
+              <span
+                className="pointer-events-none absolute left-1/2 top-full z-10 mt-1 -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide shadow"
+                style={{ background: elig === 'red' ? '#ef4444' : '#f59e0b', color: elig === 'red' ? '#fff' : '#1a1206' }}
+              >
+                Out of position{penalty > 0 ? ` −${penalty}` : ''}
+              </span>
+            )}
           </div>
         ) : (
           <button
@@ -89,7 +99,9 @@ export default function Pitch({ compact = false, draggable = true }: { compact?:
   const { formationName, lineup } = useStore()
   const formation = FORMATIONS.find((f) => f.name === formationName)!
   const [roleModal, setRoleModal] = useState<{ slotId: string; pos: Position } | null>(null)
-  const oop = amberCount(lineup, formationName)
+  const info = oopInfo(lineup, formationName)
+  const oopList = Object.values(info).filter((x) => x.elig !== 'green')
+  const totalPenalty = oopList.reduce((a, x) => a + x.penalty, 0)
 
   return (
     <div className="relative h-full w-full rounded-2xl ring-1 ring-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
@@ -114,6 +126,7 @@ export default function Pitch({ compact = false, draggable = true }: { compact?:
             slot={slot}
             compact={compact}
             draggable={draggable}
+            penalty={info[slot.id]?.penalty ?? 0}
             onEditRole={(slotId, pos) => setRoleModal({ slotId, pos })}
           />
         ))}
@@ -122,7 +135,8 @@ export default function Pitch({ compact = false, draggable = true }: { compact?:
       {/* overlays */}
       <div className="pointer-events-none absolute right-4 top-4 z-10 flex items-center gap-2 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs backdrop-blur-md">
         <span className="text-white/60">Out of position</span>
-        <span className={`font-bold ${oop >= AMBER_LIMIT ? 'text-amber-300' : 'text-white'}`}>{oop}/{AMBER_LIMIT}</span>
+        <span className={`font-bold ${oopList.length ? 'text-amber-300' : 'text-white'}`}>{oopList.length}</span>
+        {totalPenalty > 0 && <span className="font-bold text-red-300">−{totalPenalty} OVR</span>}
       </div>
       <div className="pointer-events-none absolute bottom-3 left-5 z-10 text-3xl font-black italic text-white/85 drop-shadow">
         {formationName}

@@ -67,6 +67,28 @@ export const eligibility = (player: Player, slot: Position): Eligibility => clas
 /** Stricter eligibility used by the draft modes (fewer amber stretches). */
 export const eligibilityStrict = (player: Player, slot: Position): Eligibility => classify(player, slot, DRAFT_ADJACENCY)
 
+// Vertical "line" per position for severity scaling (GK far from everyone; the bigger the gap
+// between a player's natural line and the slot's line, the more outlandish the move).
+const LINE: Record<Position, number> = {
+  GK: 0,
+  CB: 3, LB: 3, RB: 3, LWB: 3, RWB: 3,
+  CDM: 4, CM: 4, CAM: 4, LM: 4, RM: 4,
+  LW: 5, RW: 5, CF: 5, ST: 5,
+}
+
+/**
+ * Rating penalty (points) for playing a player out of position, scaled by how far the move is.
+ * 0 if natural (green). Small for adjacent lines (LM→LB, CDM→CB), big across lines (ST→CB),
+ * brutal anything to/from GK (ST→GK). Used by Squad Builder's team rating + card callout.
+ */
+export function oopSeverity(player: Player, slot: Position): number {
+  if (eligibility(player, slot) === 'green') return 0
+  const sl = LINE[slot]
+  let dist = Infinity
+  for (const p of player.eligiblePos) dist = Math.min(dist, Math.abs(LINE[p] - sl))
+  return Math.min(40, Math.round(3 * dist * dist))
+}
+
 /** Relation between two positions (for Guess the Player): exact, semi-related, or unrelated. */
 export function positionsRelation(a: Position, b: Position): 'same' | 'related' | 'none' {
   if (a === b) return 'same'
