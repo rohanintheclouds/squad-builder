@@ -1,4 +1,4 @@
-import { byId, validSlotsFor, primaryMoveTargets, type Draft } from './engine'
+import { byId, validSlotsFor, validMoveTargets, type Draft } from './engine'
 import { FORMATIONS } from '../../data/formations'
 import { eligibilityStrict as eligibility } from '../../lib/positions'
 import PitchMarkings from '../../components/PitchMarkings'
@@ -12,9 +12,10 @@ export default function DraftPitch({ draft, compact = false }: { draft: Draft; c
   const formation = FORMATIONS.find((f) => f.name === formationName)!
   const selected = selectedPlayerId ? byId.get(selectedPlayerId) : undefined
   const validSlots = selected ? new Set(validSlotsFor(selected, lineup, formationName)) : new Set<string>()
-  // A placed player picked up to relocate, and the empty slots he may move into (primary pos only).
+  // A placed player picked up to relocate, and the empty slots he may move into (same rules as
+  // placement: green anywhere, amber only within the 3-out-of-position cap).
   const moving = movingSlotId ? byId.get(lineup[movingSlotId]) : undefined
-  const moveTargets = moving ? new Set(primaryMoveTargets(moving, lineup, formationName)) : new Set<string>()
+  const moveTargets = moving ? new Set(validMoveTargets(moving, lineup, movingSlotId!, formationName)) : new Set<string>()
   const movingLast = moving?.name.split(' ').slice(-1)[0]
   const scale = compact ? 0.72 : 1
 
@@ -76,8 +77,8 @@ export default function DraftPitch({ draft, compact = false }: { draft: Draft; c
       {moving && (
         <div className="pointer-events-none absolute left-1/2 top-3 z-20 -translate-x-1/2 whitespace-nowrap rounded-full border border-sky-300/40 bg-sky-500/25 px-3 py-1 text-xs font-semibold text-sky-50 backdrop-blur-md">
           {moveTargets.size > 0
-            ? `Moving ${movingLast} — tap an open ${moving.primaryPos} spot`
-            : `No open ${moving.primaryPos} spot for ${movingLast} — tap him again to cancel`}
+            ? `Moving ${movingLast} — tap a highlighted spot`
+            : `No legal spot for ${movingLast} — tap him again to cancel`}
         </div>
       )}
 

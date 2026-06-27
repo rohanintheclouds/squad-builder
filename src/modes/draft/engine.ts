@@ -43,14 +43,16 @@ export function validSlotsFor(player: Player, lineup: Record<string, string>, fo
 }
 
 /**
- * Empty slots a player ALREADY on the pitch may be moved into. Unlike the initial placement
- * (which allows natural interchanges and capped amber), a move is restricted to the player's
- * PRIMARY position only — so an LW placed at LM can later be moved to LW, but not the reverse.
+ * Empty slots a player ALREADY on the pitch may be moved into. A move follows the SAME rules as
+ * an initial placement: green (natural) anywhere, amber (out of position) only while the squad is
+ * within the 3-out-of-position cap — and that cap still applies after he's been moved off his
+ * current slot. We drop him from the lineup first so his own slot is treated as open and his
+ * current amber (if any) no longer counts against the cap.
  */
-export function primaryMoveTargets(player: Player, lineup: Record<string, string>, formationName: string): string[] {
-  return slots(formationName)
-    .filter((s) => !lineup[s.id] && s.type === player.primaryPos)
-    .map((s) => s.id)
+export function validMoveTargets(player: Player, lineup: Record<string, string>, fromSlotId: string, formationName: string): string[] {
+  const without = { ...lineup }
+  delete without[fromSlotId]
+  return validSlotsFor(player, without, formationName).filter((id) => id !== fromSlotId)
 }
 
 /** Free agents (any club/nation) under EMERGENCY_MAX that can fill an open slot right now. */
@@ -209,7 +211,7 @@ export function createDraft(config: DraftConfig): Draft {
       if (!movingSlotId || !formationName) return
       const playerId = lineup[movingSlotId]
       const player = playerId ? byId.get(playerId) : undefined
-      if (!player || !primaryMoveTargets(player, lineup, formationName).includes(toSlotId)) return
+      if (!player || !validMoveTargets(player, lineup, movingSlotId, formationName).includes(toSlotId)) return
       const nextLineup = { ...lineup }
       delete nextLineup[movingSlotId]
       nextLineup[toSlotId] = playerId
