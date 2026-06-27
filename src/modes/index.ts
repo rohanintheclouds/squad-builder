@@ -192,7 +192,7 @@ export const MODES: GameMode[] = [
           heading: 'Difficulty & streaks',
           items: [
             '**Futbol Fanatic** — the answer can be any player in the database.',
-            '**Casual** — only the 150 most valuable players are in play.',
+            '**Casual** — only the elite, most recognisable players (the top ~160, rated 81+) are in play.',
             'Each win **extends your streak**; three or more in a row marks a **hot streak**.',
           ],
         },

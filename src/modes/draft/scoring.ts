@@ -8,8 +8,8 @@ import { PLAYERS } from '../../data/players'
 // stronger than the World Cup, hence the separate centre.
 const SPREAD_WEIGHT = 0.7
 const CALIBRATION: Record<string, { mean: number; sd: number }> = {
-  wc: { mean: 78.0, sd: 1.9 },
-  cl: { mean: 78.7, sd: 1.8 },
+  wc: { mean: 75.2, sd: 2.95 },
+  cl: { mean: 77.7, sd: 2.45 },
 }
 
 const byId = new Map(PLAYERS.map((p) => [p.id, p]))

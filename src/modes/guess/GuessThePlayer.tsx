@@ -9,12 +9,13 @@ import type { Player } from '../../types'
 const DESKTOP_COLS = 'minmax(120px,1.7fr) repeat(7, minmax(0,1fr))'
 const MOBILE_COLS = '128px 98px 126px 116px 66px 56px 74px 84px'
 const HEADERS = ['Name', 'Club', 'Nation', 'Position', 'Foot', 'Age', 'Height', 'Value']
-const CASUAL_SIZE = 150
+// Casual pool = every player rated 81+ (the recognisable elite tier — no uncurated unknowns,
+// which are capped below 81 in ratings.ts). Fanatic = everyone.
+const CASUAL_POOL = PLAYERS.filter((p) => p.rating >= 81)
+const CASUAL_SIZE = CASUAL_POOL.length
 
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
-// Casual pool = the 150 most valuable (most recognisable) players. Fanatic = everyone.
-const TOP_150 = [...PLAYERS].sort((a, b) => (b.value ?? 0) - (a.value ?? 0)).slice(0, CASUAL_SIZE)
-const poolFor = (d: GuessDiff) => (d === 'casual' ? TOP_150 : PLAYERS)
+const poolFor = (d: GuessDiff) => (d === 'casual' ? CASUAL_POOL : PLAYERS)
 const randomFrom = (pool: Player[]) => pool[Math.floor(Math.random() * pool.length)]
 
 const CELL_BG: Record<Color, string> = {
@@ -97,7 +98,7 @@ export default function GuessThePlayer({ onExit }: { onExit: () => void }) {
         <div className="mb-6 text-center text-sm text-white/55">Pick a difficulty.</div>
         <div className="flex w-full flex-col gap-4 sm:flex-row">
           <Card d="hard" emoji="🧠" title="Futbol Fanatic" blurb={`Hard mode — the mystery player can be ANY of the ${PLAYERS.length} players in the database.`} />
-          <Card d="casual" emoji="🌥️" title="Casual Play" blurb={`Easier — only the top ${CASUAL_SIZE} players (by value) are in play.`} />
+          <Card d="casual" emoji="🌥️" title="Casual Play" blurb={`Easier — only the top ${CASUAL_SIZE} players (the elite, most recognisable names) are in play.`} />
         </div>
       </div>
     )
@@ -107,7 +108,7 @@ export default function GuessThePlayer({ onExit }: { onExit: () => void }) {
     <div className="mx-auto flex h-full max-w-4xl flex-col px-3 py-4">
       {/* what-to-do callout */}
       <div className="mb-2.5 rounded-lg border border-blue-400/25 bg-blue-500/10 px-3 py-1.5 text-center text-xs text-blue-100/80 sm:text-sm">
-        🤔 A mystery {difficulty === 'casual' ? 'top-150 ' : ''}player is locked in — guess who in {MAX_GUESSES} tries. Each guess reveals how close you are.
+        🤔 A mystery {difficulty === 'casual' ? `top-${CASUAL_SIZE} ` : ''}player is locked in — guess who in {MAX_GUESSES} tries. Each guess reveals how close you are.
       </div>
       {/* header */}
       <div className="mb-3 flex items-center gap-2">

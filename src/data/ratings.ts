@@ -55,15 +55,17 @@ export const OVERRIDES: Record<string, number> = {
   // added big names (curated; will be refined by the stats pipeline)
   'Antonio Rüdiger': 84, 'Éder Militão': 83, 'Darwin Núñez': 80, 'Casemiro': 81, 'Leroy Sané': 81,
   'Raheem Sterling': 77, 'Romelu Lukaku': 81, 'Thiago Silva': 76, 'Harry Maguire': 80,
-  'Dani Carvajal': 81, 'Aaron Wan-Bissaka': 81,
+  'Dani Carvajal': 81, 'Aaron Wan-Bissaka': 81, 'Cristiano Ronaldo': 84,
   'Willian Pacho': 84, 'Jurriën Timber': 83, 'Victor Osimhen': 83, 'Alejandro Balde': 79,
-  'Rodrygo': 80, 'Endrick': 78, 'Alphonso Davies': 80, 'Christian Pulisic': 83, 'Moisés Caicedo': 84,
+  'Rodrygo': 81, 'Endrick': 78, 'Alphonso Davies': 80, 'Christian Pulisic': 83, 'Moisés Caicedo': 84,
   // value sanity-check: high transfer value but under-rated by the formula -> nudged up
   // (prospects valued on potential — Kroupi/Rayan/Vušković/Jacquet — left alone)
   'Enzo Fernández': 84, 'Ryan Gravenberch': 83, 'Martín Zubimendi': 83, 'Bryan Mbeumo': 83,
   'Bradley Barcola': 83, 'Adam Wharton': 81, 'Kobbie Mainoo': 80, 'Dani Olmo': 83,
   'Mason Greenwood': 82, 'Riccardo Calafiori': 82, 'Carlos Baleba': 81, 'Igor Thiago': 79,
   'Pablo Barrios': 79, 'Iliman Ndiaye': 79,
+  // hyped prospects whose transfer value over-rates current ability — pinned down explicitly
+  'Johan Manzambi': 72,
 }
 
 const LEAGUE_ADJ: Record<string, number> = {
@@ -72,12 +74,14 @@ const LEAGUE_ADJ: Record<string, number> = {
   'Saudi Pro League': -1, 'Russian PL': -1, 'Super League': -2, SuperLiga: -2, Segunda: -3, Other: -2,
 }
 
-// Fallback ONLY: value-derived and intentionally conservative (value is de-emphasised) so an
-// uncurated, pricey-but-unproven player tops out modestly. Curate notable players above instead.
+// Fallback ONLY (uncurated players). Value-derived and intentionally HARSH: it spreads unknowns
+// down a 60–80 bell band so a pricey-but-unproven prospect (e.g. a hyped teenager on a €50M tag)
+// can't drift into the elite tier on transfer value alone. The lowest-value players bottom out at
+// 60. Notable players are curated in OVERRIDES above and bypass this entirely.
 export function formulaRating(value: number | null, league: string): number {
-  if (value == null) return 76
+  if (value == null) return 68
   const adj = LEAGUE_ADJ[league] ?? -1
-  return Math.max(70, Math.min(83, Math.round(58 + 11 * Math.log10(Math.max(1, value)) + adj)))
+  return Math.max(60, Math.min(80, Math.round(60 + 9.4 * Math.log10(Math.max(1, value)) + adj)))
 }
 
 // Last-season (2024/25) form from API-Football, keyed by player name (see scripts/update-ratings.mjs).
@@ -87,13 +91,45 @@ type FormRow = { r: number; m: number }
 const formAbility = (r: number) => Math.max(60, Math.min(93, Math.round(33 + 7 * r)))
 
 export function ratingFor(name: string, value: number | null, league: string): number {
-  const base = OVERRIDES[name] ?? formulaRating(value, league)
+  const override = OVERRIDES[name]
+  const base = override ?? formulaRating(value, league)
   const f = (FORM as Record<string, FormRow>)[name]
+  let r = base
   if (f && f.m >= 900 && f.r > 0) {
-    const w = OVERRIDES[name] != null ? 0.15 : 0.35 // curated -> light nudge; uncurated -> a bit more
-    return Math.max(40, Math.min(99, Math.round(base * (1 - w) + formAbility(f.r) * w)))
+    const w = override != null ? 0.15 : 0.35 // curated -> light nudge; uncurated -> a bit more
+    r = Math.round(base * (1 - w) + formAbility(f.r) * w)
   }
-  return base
+  // Curated players keep their calibrated value (40-99). Uncurated players are held inside the
+  // harsh 60-80 band so an unknown can never reach the elite / Casual-mode tier (rating >= 81).
+  return override != null ? Math.max(40, Math.min(99, r)) : Math.max(60, Math.min(80, r))
+}
+
+// ---- Uncurated bell curve --------------------------------------------------------------------
+// Players NOT in OVERRIDES (the lesser-known names) are spread across a HARSH bell curve by their
+// rank, not their raw transfer value: the weakest sits at 60, the strongest at 80 (just below the
+// curated/elite tier and the Casual-mode cutoff of 81), centred ~70. This keeps unknowns clearly
+// beneath the calibrated stars and gives the lower tier a realistic distribution.
+export const UNCURATED_MEAN = 70
+export const UNCURATED_SD = 5
+export const UNCURATED_MIN = 60
+export const UNCURATED_MAX = 80
+
+// Inverse normal CDF (Acklam's rational approximation): probability 0..1 -> z-score.
+export function invNorm(p: number): number {
+  const a = [-39.6968302866538, 220.946098424521, -275.928510446969, 138.357751867269, -30.6647980661472, 2.50662827745924]
+  const b = [-54.4760987982241, 161.585836858041, -155.698979859887, 66.8013118877197, -13.2806815528857]
+  const c = [-0.00778489400243029, -0.322396458041136, -2.40075827716184, -2.54973253934373, 4.37466414146497, 2.93816398269878]
+  const d = [0.00778469570904146, 0.32246712907004, 2.445134137143, 3.75440866190742]
+  const pl = 0.02425
+  if (p < pl) { const q = Math.sqrt(-2 * Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1) }
+  if (p <= 1 - pl) { const q = p - 0.5, r = q*q; return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1) }
+  const q = Math.sqrt(-2 * Math.log(1 - p)); return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)
+}
+
+/** Bell-curve rating for an uncurated player from its rank percentile (0 = weakest .. 1 = strongest). */
+export function uncuratedRating(rankPercentile: number): number {
+  const z = invNorm(Math.min(0.9995, Math.max(0.0005, rankPercentile)))
+  return Math.max(UNCURATED_MIN, Math.min(UNCURATED_MAX, Math.round(UNCURATED_MEAN + UNCURATED_SD * z)))
 }
 
 /**
