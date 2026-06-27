@@ -1,7 +1,7 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand'
 import { FORMATIONS } from '../../data/formations'
 import { PLAYERS } from '../../data/players'
-import { eligibility } from '../../lib/positions'
+import { eligibilityStrict as eligibility } from '../../lib/positions'
 import type { Player, Position } from '../../types'
 import type { Tier } from './scoring'
 

@@ -1,6 +1,6 @@
 import { byId, validSlotsFor, type Draft } from './engine'
 import { FORMATIONS } from '../../data/formations'
-import { eligibility } from '../../lib/positions'
+import { eligibilityStrict as eligibility } from '../../lib/positions'
 import PitchMarkings from '../../components/PitchMarkings'
 import PlayerCard from '../../components/PlayerCard'
 

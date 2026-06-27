@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { byId, type Draft } from './engine'
 import { FORMATIONS } from '../../data/formations'
 import { scoreTeam } from './scoring'
-import { eligibility } from '../../lib/positions'
+import { eligibilityStrict as eligibility } from '../../lib/positions'
 import { recordBestTier } from '../../lib/progress'
 import PlayerCard from '../../components/PlayerCard'
 

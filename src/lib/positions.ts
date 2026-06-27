@@ -37,23 +37,35 @@ const ADJACENCY: Record<Position, Position[]> = {
   ST: ['RW', 'LW'],
 }
 
-/**
- * Decide whether a player can fill a given slot.
- *  green  = a natural position (their own, or a natural interchange like CM<->CDM, RM<->RW)
- *  amber  = out of position but plausible (counts toward the 3-OOP cap)
- *  red    = blocked (e.g. a CB at ST)
- */
-export function eligibility(player: Player, slot: Position): Eligibility {
+// STRICTER amber for the draft modes (Road to the World Cup / Champions League): drops the
+// "stretch" pairs that aren't really plausible unless a player actually plays both — CB↔CDM,
+// CB↔fullback, and wide-mid/winger↔fullback/wingback. Players who genuinely play both keep it
+// green via their own listed positions (e.g. Tchouaméni has CB in his data).
+const DRAFT_ADJACENCY: Record<Position, Position[]> = {
+  GK: [], RB: [], RWB: [], LB: [], LWB: [], CB: [], CDM: [], CM: [],
+  CAM: ['RW', 'LW'],
+  RM: [], LM: [],
+  RW: ['ST', 'CF'], LW: ['ST', 'CF'],
+  CF: ['CAM'], ST: ['RW', 'LW'],
+}
+
+function classify(player: Player, slot: Position, adj: Record<Position, Position[]>): Eligibility {
   if (player.eligiblePos.includes(slot)) return 'green'
-  for (const p of player.eligiblePos) {
-    if (GREEN_FLEX[p]?.includes(slot)) return 'green'
-  }
+  for (const p of player.eligiblePos) if (GREEN_FLEX[p]?.includes(slot)) return 'green'
   const flex = new Set<Position>()
-  for (const p of player.eligiblePos) {
-    for (const a of ADJACENCY[p]) flex.add(a)
-  }
+  for (const p of player.eligiblePos) for (const a of adj[p]) flex.add(a)
   return flex.has(slot) ? 'amber' : 'red'
 }
+
+/**
+ * Decide whether a player can fill a given slot (Squad Builder rules).
+ *  green = natural (own position or a natural interchange like CM<->CDM, RM<->RW)
+ *  amber = out of position but plausible (counts toward the 3-OOP cap) · red = blocked
+ */
+export const eligibility = (player: Player, slot: Position): Eligibility => classify(player, slot, ADJACENCY)
+
+/** Stricter eligibility used by the draft modes (fewer amber stretches). */
+export const eligibilityStrict = (player: Player, slot: Position): Eligibility => classify(player, slot, DRAFT_ADJACENCY)
 
 /** Relation between two positions (for Guess the Player): exact, semi-related, or unrelated. */
 export function positionsRelation(a: Position, b: Position): 'same' | 'related' | 'none' {
