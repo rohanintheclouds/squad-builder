@@ -51,13 +51,13 @@ export const OVERRIDES: Record<string, number> = {
   'Sadio Mané': 81, 'Sergio Ramos': 80, 'Thomas Müller': 81, 'Marco Reus': 79,
   'Pape Matar Sarr': 81, 'Eduardo Camavinga': 84, 'Nico Paz': 83, 'Gavi': 81,
   'Lennart Karl': 82, 'Franco Mastantuono': 82, 'Rayan Cherki': 84, 'Kai Havertz': 83,
-  'Dominic Solanke': 82, 'Luis Díaz': 85, "Nico O'Reilly": 83,
+  'Dominic Solanke': 79, 'Luis Díaz': 85, "Nico O'Reilly": 83,
   // added big names (curated; will be refined by the stats pipeline)
   'Antonio Rüdiger': 84, 'Éder Militão': 83, 'Darwin Núñez': 80, 'Casemiro': 81, 'Leroy Sané': 81,
   'Raheem Sterling': 77, 'Romelu Lukaku': 81, 'Thiago Silva': 76, 'Harry Maguire': 80,
   'Dani Carvajal': 81, 'Aaron Wan-Bissaka': 81, 'Cristiano Ronaldo': 84,
   'Willian Pacho': 84, 'Jurriën Timber': 83, 'Victor Osimhen': 83, 'Alejandro Balde': 79,
-  'Rodrygo': 81, 'Endrick': 78, 'Alphonso Davies': 80, 'Christian Pulisic': 83, 'Moisés Caicedo': 84,
+  'Rodrygo': 81, 'Endrick': 78, 'Alphonso Davies': 81, 'Christian Pulisic': 83, 'Moisés Caicedo': 84,
   // value sanity-check: high transfer value but under-rated by the formula -> nudged up
   // (prospects valued on potential — Kroupi/Rayan/Vušković/Jacquet — left alone)
   'Enzo Fernández': 84, 'Ryan Gravenberch': 83, 'Martín Zubimendi': 83, 'Bryan Mbeumo': 83,
